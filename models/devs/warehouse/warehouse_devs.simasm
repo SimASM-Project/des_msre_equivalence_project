@@ -1,0 +1,2498 @@
+// SimASM: warehouse_devs
+// 6-station warehouse outbound - per-server DEVS for stream-synchronized equivalence
+// Generated from DEVS specification
+// Date: 2026-03-15 22:10:30
+// Formalism: Discrete Event System Specification (DEVS)
+// Algorithm: Abstract Simulator (Zeigler et al. 2019)
+
+// ============================================================
+// Imports
+// ============================================================
+
+import Random as rnd
+import Stdlib as lib
+
+// ============================================================
+// Domains
+// ============================================================
+
+// Components: GenZA1, GenZA2, GenZB1, GenZB2, PickA, PickA_Srv_1, PickA_Srv_2, PickA_Srv_3, PickA_Srv_4, PickB, PickB_Srv_1, PickB_Srv_2, Label, Label_Srv_1, Label_Srv_2, Label_Srv_3, Scan, Scan_Srv_1, Pack, Pack_Srv_1, Pack_Srv_2, Pack_Srv_3, Release, Release_Srv_1, Release_Srv_2, Sink
+domain Component
+
+// Phases: active
+domain Phase_GenZA1
+// Phases: active
+domain Phase_GenZA2
+// Phases: active
+domain Phase_GenZB1
+// Phases: active
+domain Phase_GenZB2
+// Phases: idle, dispatch_to_1, dispatch_to_2, dispatch_to_3, dispatch_to_4
+domain Phase_PickA
+// Phases: passive, busy
+domain Phase_PickA_Srv_1
+// Phases: passive, busy
+domain Phase_PickA_Srv_2
+// Phases: passive, busy
+domain Phase_PickA_Srv_3
+// Phases: passive, busy
+domain Phase_PickA_Srv_4
+// Phases: idle, dispatch_to_1, dispatch_to_2
+domain Phase_PickB
+// Phases: passive, busy
+domain Phase_PickB_Srv_1
+// Phases: passive, busy
+domain Phase_PickB_Srv_2
+// Phases: idle, dispatch_to_1, dispatch_to_2, dispatch_to_3
+domain Phase_Label
+// Phases: passive, busy
+domain Phase_Label_Srv_1
+// Phases: passive, busy
+domain Phase_Label_Srv_2
+// Phases: passive, busy
+domain Phase_Label_Srv_3
+// Phases: idle, dispatch_to_1
+domain Phase_Scan
+// Phases: passive, busy
+domain Phase_Scan_Srv_1
+// Phases: idle, dispatch_to_1, dispatch_to_2, dispatch_to_3
+domain Phase_Pack
+// Phases: passive, busy
+domain Phase_Pack_Srv_1
+// Phases: passive, busy
+domain Phase_Pack_Srv_2
+// Phases: passive, busy
+domain Phase_Pack_Srv_3
+// Phases: idle, dispatch_to_1, dispatch_to_2
+domain Phase_Release
+// Phases: passive, busy
+domain Phase_Release_Srv_1
+// Phases: passive, busy
+domain Phase_Release_Srv_2
+// Phases: idle
+domain Phase_Sink
+
+domain Object
+domain Job <: Object
+
+// Coordinator event type
+domain ComponentEvent
+
+// ============================================================
+// Constants
+// ============================================================
+
+const Q1_max: Nat
+const Q2_max: Nat
+const Q3_max: Nat
+const Q4_max: Nat
+const Q5_max: Nat
+const Q6_max: Nat
+const S1_capacity: Nat
+const S2_capacity: Nat
+const S3_capacity: Nat
+const S4_capacity: Nat
+const S5_capacity: Nat
+const S6_capacity: Nat
+const iat_c1_mean: Real
+const iat_c2_mean: Real
+const iat_c3_mean: Real
+const iat_c4_mean: Real
+const ist_s1_mean: Real
+const ist_s2_mean: Real
+const ist_s3_mean: Real
+const ist_s4_mean: Real
+const ist_s5_mean: Real
+const ist_s6_mean: Real
+const sim_end_time: Real
+
+// ============================================================
+// State Variables
+// ============================================================
+
+// Simulation clock
+var sim_clocktime: Real
+
+// Per-component phase
+var phase_GenZA1: String
+var phase_GenZA2: String
+var phase_GenZB1: String
+var phase_GenZB2: String
+var phase_PickA: String
+var phase_PickA_Srv_1: String
+var phase_PickA_Srv_2: String
+var phase_PickA_Srv_3: String
+var phase_PickA_Srv_4: String
+var phase_PickB: String
+var phase_PickB_Srv_1: String
+var phase_PickB_Srv_2: String
+var phase_Label: String
+var phase_Label_Srv_1: String
+var phase_Label_Srv_2: String
+var phase_Label_Srv_3: String
+var phase_Scan: String
+var phase_Scan_Srv_1: String
+var phase_Pack: String
+var phase_Pack_Srv_1: String
+var phase_Pack_Srv_2: String
+var phase_Pack_Srv_3: String
+var phase_Release: String
+var phase_Release_Srv_1: String
+var phase_Release_Srv_2: String
+var phase_Sink: String
+
+// Per-component timing
+var tl_GenZA1: Real
+var tn_GenZA1: Real
+var tl_GenZA2: Real
+var tn_GenZA2: Real
+var tl_GenZB1: Real
+var tn_GenZB1: Real
+var tl_GenZB2: Real
+var tn_GenZB2: Real
+var tl_PickA: Real
+var tn_PickA: Real
+var tl_PickA_Srv_1: Real
+var tn_PickA_Srv_1: Real
+var tl_PickA_Srv_2: Real
+var tn_PickA_Srv_2: Real
+var tl_PickA_Srv_3: Real
+var tn_PickA_Srv_3: Real
+var tl_PickA_Srv_4: Real
+var tn_PickA_Srv_4: Real
+var tl_PickB: Real
+var tn_PickB: Real
+var tl_PickB_Srv_1: Real
+var tn_PickB_Srv_1: Real
+var tl_PickB_Srv_2: Real
+var tn_PickB_Srv_2: Real
+var tl_Label: Real
+var tn_Label: Real
+var tl_Label_Srv_1: Real
+var tn_Label_Srv_1: Real
+var tl_Label_Srv_2: Real
+var tn_Label_Srv_2: Real
+var tl_Label_Srv_3: Real
+var tn_Label_Srv_3: Real
+var tl_Scan: Real
+var tn_Scan: Real
+var tl_Scan_Srv_1: Real
+var tn_Scan_Srv_1: Real
+var tl_Pack: Real
+var tn_Pack: Real
+var tl_Pack_Srv_1: Real
+var tn_Pack_Srv_1: Real
+var tl_Pack_Srv_2: Real
+var tn_Pack_Srv_2: Real
+var tl_Pack_Srv_3: Real
+var tn_Pack_Srv_3: Real
+var tl_Release: Real
+var tn_Release: Real
+var tl_Release_Srv_1: Real
+var tn_Release_Srv_1: Real
+var tl_Release_Srv_2: Real
+var tn_Release_Srv_2: Real
+var tl_Sink: Real
+var tn_Sink: Real
+
+// Per-component state variables
+var GenZA1_job_count: Nat
+var GenZA2_job_count: Nat
+var GenZB1_job_count: Nat
+var GenZB2_job_count: Nat
+var PickA_queue_count: Nat
+var PickA_server_count: Nat
+var PickA_srv_1_free: Nat
+var PickA_srv_2_free: Nat
+var PickA_srv_3_free: Nat
+var PickA_srv_4_free: Nat
+var PickB_queue_count: Nat
+var PickB_server_count: Nat
+var PickB_srv_1_free: Nat
+var PickB_srv_2_free: Nat
+var Label_queue_count: Nat
+var Label_server_count: Nat
+var Label_srv_1_free: Nat
+var Label_srv_2_free: Nat
+var Label_srv_3_free: Nat
+var Scan_queue_count: Nat
+var Scan_server_count: Nat
+var Scan_srv_1_free: Nat
+var Pack_queue_count: Nat
+var Pack_server_count: Nat
+var Pack_srv_1_free: Nat
+var Pack_srv_2_free: Nat
+var Pack_srv_3_free: Nat
+var Release_queue_count: Nat
+var Release_server_count: Nat
+var Release_srv_1_free: Nat
+var Release_srv_2_free: Nat
+var Sink_departure_count: Nat
+
+// Event list (coordinator)
+var future_event_list: List<ComponentEvent>
+
+// Coordinator auxiliary variables
+var imminent_component: String
+var output_value: String
+var current_input_port: String
+var stopping_condition: Boolean
+
+// ============================================================
+// Random Streams
+// ============================================================
+
+var interarrival_za1: rnd.exponential(iat_c1_mean) as "creation_za1"
+var interarrival_za2: rnd.exponential(iat_c2_mean) as "creation_za2"
+var interarrival_zb1: rnd.exponential(iat_c3_mean) as "creation_zb1"
+var interarrival_zb2: rnd.exponential(iat_c4_mean) as "creation_zb2"
+var service_time_pick_a: rnd.exponential(ist_s1_mean) as "service_pick_a"
+var service_time_pick_b: rnd.exponential(ist_s2_mean) as "service_pick_b"
+var service_time_label: rnd.exponential(ist_s3_mean) as "service_label"
+var service_time_scan: rnd.exponential(ist_s4_mean) as "service_scan"
+var service_time_pack: rnd.exponential(ist_s5_mean) as "service_pack"
+var service_time_release: rnd.exponential(ist_s6_mean) as "service_release"
+
+// ============================================================
+// Observables
+// ============================================================
+
+derived function get_S1_busy(): Real = PickA_server_count
+derived function get_S2_busy(): Real = PickB_server_count
+derived function get_S3_busy(): Real = Label_server_count
+derived function get_S4_busy(): Real = Scan_server_count
+derived function get_S5_busy(): Real = Pack_server_count
+derived function get_S6_busy(): Real = Release_server_count
+
+// ============================================================
+// Dynamic Function Declarations
+// ============================================================
+
+// Event list entry properties
+dynamic function cel_component(e: ComponentEvent): Component
+dynamic function cel_time(e: ComponentEvent): Real
+
+// ============================================================
+// Component Rules (Atomic Model Transitions)
+// ============================================================
+
+// Internal transition: delta_int for GenZA1
+rule internal_transition_GenZA1() =
+    if phase_GenZA1 == "active" then
+        phase_GenZA1 := "active"
+        GenZA1_job_count := GenZA1_job_count + 1
+    endif
+
+    // Update timing
+    tl_GenZA1 := sim_clocktime
+    tn_GenZA1 := sim_clocktime + interarrival_za1
+endrule
+
+// External transition: delta_ext for GenZA1
+rule external_transition_GenZA1() =
+    skip
+endrule
+
+// Output function: lambda for GenZA1
+rule output_function_GenZA1() =
+    if phase_GenZA1 == "active" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for GenZA2
+rule internal_transition_GenZA2() =
+    if phase_GenZA2 == "active" then
+        phase_GenZA2 := "active"
+        GenZA2_job_count := GenZA2_job_count + 1
+    endif
+
+    // Update timing
+    tl_GenZA2 := sim_clocktime
+    tn_GenZA2 := sim_clocktime + interarrival_za2
+endrule
+
+// External transition: delta_ext for GenZA2
+rule external_transition_GenZA2() =
+    skip
+endrule
+
+// Output function: lambda for GenZA2
+rule output_function_GenZA2() =
+    if phase_GenZA2 == "active" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for GenZB1
+rule internal_transition_GenZB1() =
+    if phase_GenZB1 == "active" then
+        phase_GenZB1 := "active"
+        GenZB1_job_count := GenZB1_job_count + 1
+    endif
+
+    // Update timing
+    tl_GenZB1 := sim_clocktime
+    tn_GenZB1 := sim_clocktime + interarrival_zb1
+endrule
+
+// External transition: delta_ext for GenZB1
+rule external_transition_GenZB1() =
+    skip
+endrule
+
+// Output function: lambda for GenZB1
+rule output_function_GenZB1() =
+    if phase_GenZB1 == "active" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for GenZB2
+rule internal_transition_GenZB2() =
+    if phase_GenZB2 == "active" then
+        phase_GenZB2 := "active"
+        GenZB2_job_count := GenZB2_job_count + 1
+    endif
+
+    // Update timing
+    tl_GenZB2 := sim_clocktime
+    tn_GenZB2 := sim_clocktime + interarrival_zb2
+endrule
+
+// External transition: delta_ext for GenZB2
+rule external_transition_GenZB2() =
+    skip
+endrule
+
+// Output function: lambda for GenZB2
+rule output_function_GenZB2() =
+    if phase_GenZB2 == "active" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for PickA
+rule internal_transition_PickA() =
+    if phase_PickA == "dispatch_to_1" and PickA_queue_count > 1 and PickA_srv_2_free == 1 then
+        phase_PickA := "dispatch_to_2"
+        PickA_queue_count := PickA_queue_count - 1
+        PickA_srv_1_free := 0
+        PickA_server_count := PickA_server_count + 1
+    elseif phase_PickA == "dispatch_to_1" and PickA_queue_count > 1 and PickA_srv_2_free == 0 and PickA_srv_3_free == 1 then
+        phase_PickA := "dispatch_to_3"
+        PickA_queue_count := PickA_queue_count - 1
+        PickA_srv_1_free := 0
+        PickA_server_count := PickA_server_count + 1
+    elseif phase_PickA == "dispatch_to_1" and PickA_queue_count > 1 and PickA_srv_2_free == 0 and PickA_srv_3_free == 0 and PickA_srv_4_free == 1 then
+        phase_PickA := "dispatch_to_4"
+        PickA_queue_count := PickA_queue_count - 1
+        PickA_srv_1_free := 0
+        PickA_server_count := PickA_server_count + 1
+    elseif phase_PickA == "dispatch_to_1" and PickA_queue_count == 1 then
+        phase_PickA := "idle"
+        PickA_queue_count := PickA_queue_count - 1
+        PickA_srv_1_free := 0
+        PickA_server_count := PickA_server_count + 1
+    elseif phase_PickA == "dispatch_to_1" and PickA_queue_count > 1 and PickA_srv_2_free == 0 and PickA_srv_3_free == 0 and PickA_srv_4_free == 0 then
+        phase_PickA := "idle"
+        PickA_queue_count := PickA_queue_count - 1
+        PickA_srv_1_free := 0
+        PickA_server_count := PickA_server_count + 1
+    elseif phase_PickA == "dispatch_to_2" and PickA_queue_count > 1 and PickA_srv_3_free == 1 then
+        phase_PickA := "dispatch_to_3"
+        PickA_queue_count := PickA_queue_count - 1
+        PickA_srv_2_free := 0
+        PickA_server_count := PickA_server_count + 1
+    elseif phase_PickA == "dispatch_to_2" and PickA_queue_count > 1 and PickA_srv_3_free == 0 and PickA_srv_4_free == 1 then
+        phase_PickA := "dispatch_to_4"
+        PickA_queue_count := PickA_queue_count - 1
+        PickA_srv_2_free := 0
+        PickA_server_count := PickA_server_count + 1
+    elseif phase_PickA == "dispatch_to_2" and PickA_queue_count == 1 then
+        phase_PickA := "idle"
+        PickA_queue_count := PickA_queue_count - 1
+        PickA_srv_2_free := 0
+        PickA_server_count := PickA_server_count + 1
+    elseif phase_PickA == "dispatch_to_2" and PickA_queue_count > 1 and PickA_srv_3_free == 0 and PickA_srv_4_free == 0 then
+        phase_PickA := "idle"
+        PickA_queue_count := PickA_queue_count - 1
+        PickA_srv_2_free := 0
+        PickA_server_count := PickA_server_count + 1
+    elseif phase_PickA == "dispatch_to_3" and PickA_queue_count > 1 and PickA_srv_4_free == 1 then
+        phase_PickA := "dispatch_to_4"
+        PickA_queue_count := PickA_queue_count - 1
+        PickA_srv_3_free := 0
+        PickA_server_count := PickA_server_count + 1
+    elseif phase_PickA == "dispatch_to_3" and PickA_queue_count == 1 then
+        phase_PickA := "idle"
+        PickA_queue_count := PickA_queue_count - 1
+        PickA_srv_3_free := 0
+        PickA_server_count := PickA_server_count + 1
+    elseif phase_PickA == "dispatch_to_3" and PickA_queue_count > 1 and PickA_srv_4_free == 0 then
+        phase_PickA := "idle"
+        PickA_queue_count := PickA_queue_count - 1
+        PickA_srv_3_free := 0
+        PickA_server_count := PickA_server_count + 1
+    elseif phase_PickA == "dispatch_to_4" and PickA_queue_count == 1 then
+        phase_PickA := "idle"
+        PickA_queue_count := PickA_queue_count - 1
+        PickA_srv_4_free := 0
+        PickA_server_count := PickA_server_count + 1
+    elseif phase_PickA == "dispatch_to_4" and PickA_queue_count > 1 then
+        phase_PickA := "idle"
+        PickA_queue_count := PickA_queue_count - 1
+        PickA_srv_4_free := 0
+        PickA_server_count := PickA_server_count + 1
+    endif
+
+    // Update timing
+    tl_PickA := sim_clocktime
+    if phase_PickA == "idle" then
+        tn_PickA := sim_clocktime + 999999999.0
+    elseif phase_PickA == "dispatch_to_1" then
+        tn_PickA := sim_clocktime + 0.0
+    elseif phase_PickA == "dispatch_to_2" then
+        tn_PickA := sim_clocktime + 0.0
+    elseif phase_PickA == "dispatch_to_3" then
+        tn_PickA := sim_clocktime + 0.0
+    else
+        tn_PickA := sim_clocktime + 0.0
+    endif
+endrule
+
+// External transition: delta_ext for PickA
+rule external_transition_PickA() =
+    if phase_PickA == "idle" and current_input_port == "in" and PickA_srv_1_free == 1 then
+        phase_PickA := "dispatch_to_1"
+        PickA_queue_count := PickA_queue_count + 1
+        tl_PickA := sim_clocktime
+        tn_PickA := sim_clocktime + 0.0
+    elseif phase_PickA == "idle" and current_input_port == "in" and PickA_srv_1_free == 0 and PickA_srv_2_free == 1 then
+        phase_PickA := "dispatch_to_2"
+        PickA_queue_count := PickA_queue_count + 1
+        tl_PickA := sim_clocktime
+        tn_PickA := sim_clocktime + 0.0
+    elseif phase_PickA == "idle" and current_input_port == "in" and PickA_srv_1_free == 0 and PickA_srv_2_free == 0 and PickA_srv_3_free == 1 then
+        phase_PickA := "dispatch_to_3"
+        PickA_queue_count := PickA_queue_count + 1
+        tl_PickA := sim_clocktime
+        tn_PickA := sim_clocktime + 0.0
+    elseif phase_PickA == "idle" and current_input_port == "in" and PickA_srv_1_free == 0 and PickA_srv_2_free == 0 and PickA_srv_3_free == 0 and PickA_srv_4_free == 1 then
+        phase_PickA := "dispatch_to_4"
+        PickA_queue_count := PickA_queue_count + 1
+        tl_PickA := sim_clocktime
+        tn_PickA := sim_clocktime + 0.0
+    elseif phase_PickA == "idle" and current_input_port == "in" and PickA_srv_1_free == 0 and PickA_srv_2_free == 0 and PickA_srv_3_free == 0 and PickA_srv_4_free == 0 then
+        phase_PickA := "idle"
+        PickA_queue_count := PickA_queue_count + 1
+    elseif phase_PickA == "dispatch_to_1" and current_input_port == "in" then
+        phase_PickA := "dispatch_to_1"
+        PickA_queue_count := PickA_queue_count + 1
+    elseif phase_PickA == "dispatch_to_2" and current_input_port == "in" then
+        phase_PickA := "dispatch_to_2"
+        PickA_queue_count := PickA_queue_count + 1
+    elseif phase_PickA == "dispatch_to_3" and current_input_port == "in" then
+        phase_PickA := "dispatch_to_3"
+        PickA_queue_count := PickA_queue_count + 1
+    elseif phase_PickA == "dispatch_to_4" and current_input_port == "in" then
+        phase_PickA := "dispatch_to_4"
+        PickA_queue_count := PickA_queue_count + 1
+    elseif phase_PickA == "idle" and current_input_port == "done_1" and PickA_queue_count > 0 then
+        phase_PickA := "dispatch_to_1"
+        PickA_srv_1_free := 1
+        PickA_server_count := PickA_server_count - 1
+        tl_PickA := sim_clocktime
+        tn_PickA := sim_clocktime + 0.0
+    elseif phase_PickA == "idle" and current_input_port == "done_1" and PickA_queue_count == 0 then
+        phase_PickA := "idle"
+        PickA_srv_1_free := 1
+        PickA_server_count := PickA_server_count - 1
+    elseif phase_PickA == "idle" and current_input_port == "done_2" and PickA_queue_count > 0 then
+        phase_PickA := "dispatch_to_2"
+        PickA_srv_2_free := 1
+        PickA_server_count := PickA_server_count - 1
+        tl_PickA := sim_clocktime
+        tn_PickA := sim_clocktime + 0.0
+    elseif phase_PickA == "idle" and current_input_port == "done_2" and PickA_queue_count == 0 then
+        phase_PickA := "idle"
+        PickA_srv_2_free := 1
+        PickA_server_count := PickA_server_count - 1
+    elseif phase_PickA == "idle" and current_input_port == "done_3" and PickA_queue_count > 0 then
+        phase_PickA := "dispatch_to_3"
+        PickA_srv_3_free := 1
+        PickA_server_count := PickA_server_count - 1
+        tl_PickA := sim_clocktime
+        tn_PickA := sim_clocktime + 0.0
+    elseif phase_PickA == "idle" and current_input_port == "done_3" and PickA_queue_count == 0 then
+        phase_PickA := "idle"
+        PickA_srv_3_free := 1
+        PickA_server_count := PickA_server_count - 1
+    elseif phase_PickA == "idle" and current_input_port == "done_4" and PickA_queue_count > 0 then
+        phase_PickA := "dispatch_to_4"
+        PickA_srv_4_free := 1
+        PickA_server_count := PickA_server_count - 1
+        tl_PickA := sim_clocktime
+        tn_PickA := sim_clocktime + 0.0
+    elseif phase_PickA == "idle" and current_input_port == "done_4" and PickA_queue_count == 0 then
+        phase_PickA := "idle"
+        PickA_srv_4_free := 1
+        PickA_server_count := PickA_server_count - 1
+    elseif phase_PickA == "dispatch_to_1" and current_input_port == "done_1" then
+        phase_PickA := "dispatch_to_1"
+        PickA_srv_1_free := 1
+        PickA_server_count := PickA_server_count - 1
+    elseif phase_PickA == "dispatch_to_1" and current_input_port == "done_2" then
+        phase_PickA := "dispatch_to_1"
+        PickA_srv_2_free := 1
+        PickA_server_count := PickA_server_count - 1
+    elseif phase_PickA == "dispatch_to_1" and current_input_port == "done_3" then
+        phase_PickA := "dispatch_to_1"
+        PickA_srv_3_free := 1
+        PickA_server_count := PickA_server_count - 1
+    elseif phase_PickA == "dispatch_to_1" and current_input_port == "done_4" then
+        phase_PickA := "dispatch_to_1"
+        PickA_srv_4_free := 1
+        PickA_server_count := PickA_server_count - 1
+    elseif phase_PickA == "dispatch_to_2" and current_input_port == "done_1" then
+        phase_PickA := "dispatch_to_2"
+        PickA_srv_1_free := 1
+        PickA_server_count := PickA_server_count - 1
+    elseif phase_PickA == "dispatch_to_2" and current_input_port == "done_2" then
+        phase_PickA := "dispatch_to_2"
+        PickA_srv_2_free := 1
+        PickA_server_count := PickA_server_count - 1
+    elseif phase_PickA == "dispatch_to_2" and current_input_port == "done_3" then
+        phase_PickA := "dispatch_to_2"
+        PickA_srv_3_free := 1
+        PickA_server_count := PickA_server_count - 1
+    elseif phase_PickA == "dispatch_to_2" and current_input_port == "done_4" then
+        phase_PickA := "dispatch_to_2"
+        PickA_srv_4_free := 1
+        PickA_server_count := PickA_server_count - 1
+    elseif phase_PickA == "dispatch_to_3" and current_input_port == "done_1" then
+        phase_PickA := "dispatch_to_3"
+        PickA_srv_1_free := 1
+        PickA_server_count := PickA_server_count - 1
+    elseif phase_PickA == "dispatch_to_3" and current_input_port == "done_2" then
+        phase_PickA := "dispatch_to_3"
+        PickA_srv_2_free := 1
+        PickA_server_count := PickA_server_count - 1
+    elseif phase_PickA == "dispatch_to_3" and current_input_port == "done_3" then
+        phase_PickA := "dispatch_to_3"
+        PickA_srv_3_free := 1
+        PickA_server_count := PickA_server_count - 1
+    elseif phase_PickA == "dispatch_to_3" and current_input_port == "done_4" then
+        phase_PickA := "dispatch_to_3"
+        PickA_srv_4_free := 1
+        PickA_server_count := PickA_server_count - 1
+    elseif phase_PickA == "dispatch_to_4" and current_input_port == "done_1" then
+        phase_PickA := "dispatch_to_4"
+        PickA_srv_1_free := 1
+        PickA_server_count := PickA_server_count - 1
+    elseif phase_PickA == "dispatch_to_4" and current_input_port == "done_2" then
+        phase_PickA := "dispatch_to_4"
+        PickA_srv_2_free := 1
+        PickA_server_count := PickA_server_count - 1
+    elseif phase_PickA == "dispatch_to_4" and current_input_port == "done_3" then
+        phase_PickA := "dispatch_to_4"
+        PickA_srv_3_free := 1
+        PickA_server_count := PickA_server_count - 1
+    elseif phase_PickA == "dispatch_to_4" and current_input_port == "done_4" then
+        phase_PickA := "dispatch_to_4"
+        PickA_srv_4_free := 1
+        PickA_server_count := PickA_server_count - 1
+    endif
+endrule
+
+// Output function: lambda for PickA
+rule output_function_PickA() =
+    if phase_PickA == "dispatch_to_1" then
+        output_value := "dispatch_1"
+    elseif phase_PickA == "dispatch_to_2" then
+        output_value := "dispatch_2"
+    elseif phase_PickA == "dispatch_to_3" then
+        output_value := "dispatch_3"
+    elseif phase_PickA == "dispatch_to_4" then
+        output_value := "dispatch_4"
+    endif
+endrule
+
+// Internal transition: delta_int for PickA_Srv_1
+rule internal_transition_PickA_Srv_1() =
+    if phase_PickA_Srv_1 == "busy" then
+        phase_PickA_Srv_1 := "passive"
+    endif
+
+    // Update timing
+    tl_PickA_Srv_1 := sim_clocktime
+    if phase_PickA_Srv_1 == "passive" then
+        tn_PickA_Srv_1 := sim_clocktime + 999999999.0
+    else
+        tn_PickA_Srv_1 := sim_clocktime + service_time_pick_a
+    endif
+endrule
+
+// External transition: delta_ext for PickA_Srv_1
+rule external_transition_PickA_Srv_1() =
+    if phase_PickA_Srv_1 == "passive" then
+        phase_PickA_Srv_1 := "busy"
+        tl_PickA_Srv_1 := sim_clocktime
+        tn_PickA_Srv_1 := sim_clocktime + service_time_pick_a
+    endif
+endrule
+
+// Output function: lambda for PickA_Srv_1
+rule output_function_PickA_Srv_1() =
+    if phase_PickA_Srv_1 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for PickA_Srv_2
+rule internal_transition_PickA_Srv_2() =
+    if phase_PickA_Srv_2 == "busy" then
+        phase_PickA_Srv_2 := "passive"
+    endif
+
+    // Update timing
+    tl_PickA_Srv_2 := sim_clocktime
+    if phase_PickA_Srv_2 == "passive" then
+        tn_PickA_Srv_2 := sim_clocktime + 999999999.0
+    else
+        tn_PickA_Srv_2 := sim_clocktime + service_time_pick_a
+    endif
+endrule
+
+// External transition: delta_ext for PickA_Srv_2
+rule external_transition_PickA_Srv_2() =
+    if phase_PickA_Srv_2 == "passive" then
+        phase_PickA_Srv_2 := "busy"
+        tl_PickA_Srv_2 := sim_clocktime
+        tn_PickA_Srv_2 := sim_clocktime + service_time_pick_a
+    endif
+endrule
+
+// Output function: lambda for PickA_Srv_2
+rule output_function_PickA_Srv_2() =
+    if phase_PickA_Srv_2 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for PickA_Srv_3
+rule internal_transition_PickA_Srv_3() =
+    if phase_PickA_Srv_3 == "busy" then
+        phase_PickA_Srv_3 := "passive"
+    endif
+
+    // Update timing
+    tl_PickA_Srv_3 := sim_clocktime
+    if phase_PickA_Srv_3 == "passive" then
+        tn_PickA_Srv_3 := sim_clocktime + 999999999.0
+    else
+        tn_PickA_Srv_3 := sim_clocktime + service_time_pick_a
+    endif
+endrule
+
+// External transition: delta_ext for PickA_Srv_3
+rule external_transition_PickA_Srv_3() =
+    if phase_PickA_Srv_3 == "passive" then
+        phase_PickA_Srv_3 := "busy"
+        tl_PickA_Srv_3 := sim_clocktime
+        tn_PickA_Srv_3 := sim_clocktime + service_time_pick_a
+    endif
+endrule
+
+// Output function: lambda for PickA_Srv_3
+rule output_function_PickA_Srv_3() =
+    if phase_PickA_Srv_3 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for PickA_Srv_4
+rule internal_transition_PickA_Srv_4() =
+    if phase_PickA_Srv_4 == "busy" then
+        phase_PickA_Srv_4 := "passive"
+    endif
+
+    // Update timing
+    tl_PickA_Srv_4 := sim_clocktime
+    if phase_PickA_Srv_4 == "passive" then
+        tn_PickA_Srv_4 := sim_clocktime + 999999999.0
+    else
+        tn_PickA_Srv_4 := sim_clocktime + service_time_pick_a
+    endif
+endrule
+
+// External transition: delta_ext for PickA_Srv_4
+rule external_transition_PickA_Srv_4() =
+    if phase_PickA_Srv_4 == "passive" then
+        phase_PickA_Srv_4 := "busy"
+        tl_PickA_Srv_4 := sim_clocktime
+        tn_PickA_Srv_4 := sim_clocktime + service_time_pick_a
+    endif
+endrule
+
+// Output function: lambda for PickA_Srv_4
+rule output_function_PickA_Srv_4() =
+    if phase_PickA_Srv_4 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for PickB
+rule internal_transition_PickB() =
+    if phase_PickB == "dispatch_to_1" and PickB_queue_count > 1 and PickB_srv_2_free == 1 then
+        phase_PickB := "dispatch_to_2"
+        PickB_queue_count := PickB_queue_count - 1
+        PickB_srv_1_free := 0
+        PickB_server_count := PickB_server_count + 1
+    elseif phase_PickB == "dispatch_to_1" and PickB_queue_count == 1 then
+        phase_PickB := "idle"
+        PickB_queue_count := PickB_queue_count - 1
+        PickB_srv_1_free := 0
+        PickB_server_count := PickB_server_count + 1
+    elseif phase_PickB == "dispatch_to_1" and PickB_queue_count > 1 and PickB_srv_2_free == 0 then
+        phase_PickB := "idle"
+        PickB_queue_count := PickB_queue_count - 1
+        PickB_srv_1_free := 0
+        PickB_server_count := PickB_server_count + 1
+    elseif phase_PickB == "dispatch_to_2" and PickB_queue_count == 1 then
+        phase_PickB := "idle"
+        PickB_queue_count := PickB_queue_count - 1
+        PickB_srv_2_free := 0
+        PickB_server_count := PickB_server_count + 1
+    elseif phase_PickB == "dispatch_to_2" and PickB_queue_count > 1 then
+        phase_PickB := "idle"
+        PickB_queue_count := PickB_queue_count - 1
+        PickB_srv_2_free := 0
+        PickB_server_count := PickB_server_count + 1
+    endif
+
+    // Update timing
+    tl_PickB := sim_clocktime
+    if phase_PickB == "idle" then
+        tn_PickB := sim_clocktime + 999999999.0
+    elseif phase_PickB == "dispatch_to_1" then
+        tn_PickB := sim_clocktime + 0.0
+    else
+        tn_PickB := sim_clocktime + 0.0
+    endif
+endrule
+
+// External transition: delta_ext for PickB
+rule external_transition_PickB() =
+    if phase_PickB == "idle" and current_input_port == "in" and PickB_srv_1_free == 1 then
+        phase_PickB := "dispatch_to_1"
+        PickB_queue_count := PickB_queue_count + 1
+        tl_PickB := sim_clocktime
+        tn_PickB := sim_clocktime + 0.0
+    elseif phase_PickB == "idle" and current_input_port == "in" and PickB_srv_1_free == 0 and PickB_srv_2_free == 1 then
+        phase_PickB := "dispatch_to_2"
+        PickB_queue_count := PickB_queue_count + 1
+        tl_PickB := sim_clocktime
+        tn_PickB := sim_clocktime + 0.0
+    elseif phase_PickB == "idle" and current_input_port == "in" and PickB_srv_1_free == 0 and PickB_srv_2_free == 0 then
+        phase_PickB := "idle"
+        PickB_queue_count := PickB_queue_count + 1
+    elseif phase_PickB == "dispatch_to_1" and current_input_port == "in" then
+        phase_PickB := "dispatch_to_1"
+        PickB_queue_count := PickB_queue_count + 1
+    elseif phase_PickB == "dispatch_to_2" and current_input_port == "in" then
+        phase_PickB := "dispatch_to_2"
+        PickB_queue_count := PickB_queue_count + 1
+    elseif phase_PickB == "idle" and current_input_port == "done_1" and PickB_queue_count > 0 then
+        phase_PickB := "dispatch_to_1"
+        PickB_srv_1_free := 1
+        PickB_server_count := PickB_server_count - 1
+        tl_PickB := sim_clocktime
+        tn_PickB := sim_clocktime + 0.0
+    elseif phase_PickB == "idle" and current_input_port == "done_1" and PickB_queue_count == 0 then
+        phase_PickB := "idle"
+        PickB_srv_1_free := 1
+        PickB_server_count := PickB_server_count - 1
+    elseif phase_PickB == "idle" and current_input_port == "done_2" and PickB_queue_count > 0 then
+        phase_PickB := "dispatch_to_2"
+        PickB_srv_2_free := 1
+        PickB_server_count := PickB_server_count - 1
+        tl_PickB := sim_clocktime
+        tn_PickB := sim_clocktime + 0.0
+    elseif phase_PickB == "idle" and current_input_port == "done_2" and PickB_queue_count == 0 then
+        phase_PickB := "idle"
+        PickB_srv_2_free := 1
+        PickB_server_count := PickB_server_count - 1
+    elseif phase_PickB == "dispatch_to_1" and current_input_port == "done_1" then
+        phase_PickB := "dispatch_to_1"
+        PickB_srv_1_free := 1
+        PickB_server_count := PickB_server_count - 1
+    elseif phase_PickB == "dispatch_to_1" and current_input_port == "done_2" then
+        phase_PickB := "dispatch_to_1"
+        PickB_srv_2_free := 1
+        PickB_server_count := PickB_server_count - 1
+    elseif phase_PickB == "dispatch_to_2" and current_input_port == "done_1" then
+        phase_PickB := "dispatch_to_2"
+        PickB_srv_1_free := 1
+        PickB_server_count := PickB_server_count - 1
+    elseif phase_PickB == "dispatch_to_2" and current_input_port == "done_2" then
+        phase_PickB := "dispatch_to_2"
+        PickB_srv_2_free := 1
+        PickB_server_count := PickB_server_count - 1
+    endif
+endrule
+
+// Output function: lambda for PickB
+rule output_function_PickB() =
+    if phase_PickB == "dispatch_to_1" then
+        output_value := "dispatch_1"
+    elseif phase_PickB == "dispatch_to_2" then
+        output_value := "dispatch_2"
+    endif
+endrule
+
+// Internal transition: delta_int for PickB_Srv_1
+rule internal_transition_PickB_Srv_1() =
+    if phase_PickB_Srv_1 == "busy" then
+        phase_PickB_Srv_1 := "passive"
+    endif
+
+    // Update timing
+    tl_PickB_Srv_1 := sim_clocktime
+    if phase_PickB_Srv_1 == "passive" then
+        tn_PickB_Srv_1 := sim_clocktime + 999999999.0
+    else
+        tn_PickB_Srv_1 := sim_clocktime + service_time_pick_b
+    endif
+endrule
+
+// External transition: delta_ext for PickB_Srv_1
+rule external_transition_PickB_Srv_1() =
+    if phase_PickB_Srv_1 == "passive" then
+        phase_PickB_Srv_1 := "busy"
+        tl_PickB_Srv_1 := sim_clocktime
+        tn_PickB_Srv_1 := sim_clocktime + service_time_pick_b
+    endif
+endrule
+
+// Output function: lambda for PickB_Srv_1
+rule output_function_PickB_Srv_1() =
+    if phase_PickB_Srv_1 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for PickB_Srv_2
+rule internal_transition_PickB_Srv_2() =
+    if phase_PickB_Srv_2 == "busy" then
+        phase_PickB_Srv_2 := "passive"
+    endif
+
+    // Update timing
+    tl_PickB_Srv_2 := sim_clocktime
+    if phase_PickB_Srv_2 == "passive" then
+        tn_PickB_Srv_2 := sim_clocktime + 999999999.0
+    else
+        tn_PickB_Srv_2 := sim_clocktime + service_time_pick_b
+    endif
+endrule
+
+// External transition: delta_ext for PickB_Srv_2
+rule external_transition_PickB_Srv_2() =
+    if phase_PickB_Srv_2 == "passive" then
+        phase_PickB_Srv_2 := "busy"
+        tl_PickB_Srv_2 := sim_clocktime
+        tn_PickB_Srv_2 := sim_clocktime + service_time_pick_b
+    endif
+endrule
+
+// Output function: lambda for PickB_Srv_2
+rule output_function_PickB_Srv_2() =
+    if phase_PickB_Srv_2 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Label
+rule internal_transition_Label() =
+    if phase_Label == "dispatch_to_1" and Label_queue_count > 1 and Label_srv_2_free == 1 then
+        phase_Label := "dispatch_to_2"
+        Label_queue_count := Label_queue_count - 1
+        Label_srv_1_free := 0
+        Label_server_count := Label_server_count + 1
+    elseif phase_Label == "dispatch_to_1" and Label_queue_count > 1 and Label_srv_2_free == 0 and Label_srv_3_free == 1 then
+        phase_Label := "dispatch_to_3"
+        Label_queue_count := Label_queue_count - 1
+        Label_srv_1_free := 0
+        Label_server_count := Label_server_count + 1
+    elseif phase_Label == "dispatch_to_1" and Label_queue_count == 1 then
+        phase_Label := "idle"
+        Label_queue_count := Label_queue_count - 1
+        Label_srv_1_free := 0
+        Label_server_count := Label_server_count + 1
+    elseif phase_Label == "dispatch_to_1" and Label_queue_count > 1 and Label_srv_2_free == 0 and Label_srv_3_free == 0 then
+        phase_Label := "idle"
+        Label_queue_count := Label_queue_count - 1
+        Label_srv_1_free := 0
+        Label_server_count := Label_server_count + 1
+    elseif phase_Label == "dispatch_to_2" and Label_queue_count > 1 and Label_srv_3_free == 1 then
+        phase_Label := "dispatch_to_3"
+        Label_queue_count := Label_queue_count - 1
+        Label_srv_2_free := 0
+        Label_server_count := Label_server_count + 1
+    elseif phase_Label == "dispatch_to_2" and Label_queue_count == 1 then
+        phase_Label := "idle"
+        Label_queue_count := Label_queue_count - 1
+        Label_srv_2_free := 0
+        Label_server_count := Label_server_count + 1
+    elseif phase_Label == "dispatch_to_2" and Label_queue_count > 1 and Label_srv_3_free == 0 then
+        phase_Label := "idle"
+        Label_queue_count := Label_queue_count - 1
+        Label_srv_2_free := 0
+        Label_server_count := Label_server_count + 1
+    elseif phase_Label == "dispatch_to_3" and Label_queue_count == 1 then
+        phase_Label := "idle"
+        Label_queue_count := Label_queue_count - 1
+        Label_srv_3_free := 0
+        Label_server_count := Label_server_count + 1
+    elseif phase_Label == "dispatch_to_3" and Label_queue_count > 1 then
+        phase_Label := "idle"
+        Label_queue_count := Label_queue_count - 1
+        Label_srv_3_free := 0
+        Label_server_count := Label_server_count + 1
+    endif
+
+    // Update timing
+    tl_Label := sim_clocktime
+    if phase_Label == "idle" then
+        tn_Label := sim_clocktime + 999999999.0
+    elseif phase_Label == "dispatch_to_1" then
+        tn_Label := sim_clocktime + 0.0
+    elseif phase_Label == "dispatch_to_2" then
+        tn_Label := sim_clocktime + 0.0
+    else
+        tn_Label := sim_clocktime + 0.0
+    endif
+endrule
+
+// External transition: delta_ext for Label
+rule external_transition_Label() =
+    if phase_Label == "idle" and current_input_port == "in" and Label_srv_1_free == 1 then
+        phase_Label := "dispatch_to_1"
+        Label_queue_count := Label_queue_count + 1
+        tl_Label := sim_clocktime
+        tn_Label := sim_clocktime + 0.0
+    elseif phase_Label == "idle" and current_input_port == "in" and Label_srv_1_free == 0 and Label_srv_2_free == 1 then
+        phase_Label := "dispatch_to_2"
+        Label_queue_count := Label_queue_count + 1
+        tl_Label := sim_clocktime
+        tn_Label := sim_clocktime + 0.0
+    elseif phase_Label == "idle" and current_input_port == "in" and Label_srv_1_free == 0 and Label_srv_2_free == 0 and Label_srv_3_free == 1 then
+        phase_Label := "dispatch_to_3"
+        Label_queue_count := Label_queue_count + 1
+        tl_Label := sim_clocktime
+        tn_Label := sim_clocktime + 0.0
+    elseif phase_Label == "idle" and current_input_port == "in" and Label_srv_1_free == 0 and Label_srv_2_free == 0 and Label_srv_3_free == 0 then
+        phase_Label := "idle"
+        Label_queue_count := Label_queue_count + 1
+    elseif phase_Label == "dispatch_to_1" and current_input_port == "in" then
+        phase_Label := "dispatch_to_1"
+        Label_queue_count := Label_queue_count + 1
+    elseif phase_Label == "dispatch_to_2" and current_input_port == "in" then
+        phase_Label := "dispatch_to_2"
+        Label_queue_count := Label_queue_count + 1
+    elseif phase_Label == "dispatch_to_3" and current_input_port == "in" then
+        phase_Label := "dispatch_to_3"
+        Label_queue_count := Label_queue_count + 1
+    elseif phase_Label == "idle" and current_input_port == "done_1" and Label_queue_count > 0 then
+        phase_Label := "dispatch_to_1"
+        Label_srv_1_free := 1
+        Label_server_count := Label_server_count - 1
+        tl_Label := sim_clocktime
+        tn_Label := sim_clocktime + 0.0
+    elseif phase_Label == "idle" and current_input_port == "done_1" and Label_queue_count == 0 then
+        phase_Label := "idle"
+        Label_srv_1_free := 1
+        Label_server_count := Label_server_count - 1
+    elseif phase_Label == "idle" and current_input_port == "done_2" and Label_queue_count > 0 then
+        phase_Label := "dispatch_to_2"
+        Label_srv_2_free := 1
+        Label_server_count := Label_server_count - 1
+        tl_Label := sim_clocktime
+        tn_Label := sim_clocktime + 0.0
+    elseif phase_Label == "idle" and current_input_port == "done_2" and Label_queue_count == 0 then
+        phase_Label := "idle"
+        Label_srv_2_free := 1
+        Label_server_count := Label_server_count - 1
+    elseif phase_Label == "idle" and current_input_port == "done_3" and Label_queue_count > 0 then
+        phase_Label := "dispatch_to_3"
+        Label_srv_3_free := 1
+        Label_server_count := Label_server_count - 1
+        tl_Label := sim_clocktime
+        tn_Label := sim_clocktime + 0.0
+    elseif phase_Label == "idle" and current_input_port == "done_3" and Label_queue_count == 0 then
+        phase_Label := "idle"
+        Label_srv_3_free := 1
+        Label_server_count := Label_server_count - 1
+    elseif phase_Label == "dispatch_to_1" and current_input_port == "done_1" then
+        phase_Label := "dispatch_to_1"
+        Label_srv_1_free := 1
+        Label_server_count := Label_server_count - 1
+    elseif phase_Label == "dispatch_to_1" and current_input_port == "done_2" then
+        phase_Label := "dispatch_to_1"
+        Label_srv_2_free := 1
+        Label_server_count := Label_server_count - 1
+    elseif phase_Label == "dispatch_to_1" and current_input_port == "done_3" then
+        phase_Label := "dispatch_to_1"
+        Label_srv_3_free := 1
+        Label_server_count := Label_server_count - 1
+    elseif phase_Label == "dispatch_to_2" and current_input_port == "done_1" then
+        phase_Label := "dispatch_to_2"
+        Label_srv_1_free := 1
+        Label_server_count := Label_server_count - 1
+    elseif phase_Label == "dispatch_to_2" and current_input_port == "done_2" then
+        phase_Label := "dispatch_to_2"
+        Label_srv_2_free := 1
+        Label_server_count := Label_server_count - 1
+    elseif phase_Label == "dispatch_to_2" and current_input_port == "done_3" then
+        phase_Label := "dispatch_to_2"
+        Label_srv_3_free := 1
+        Label_server_count := Label_server_count - 1
+    elseif phase_Label == "dispatch_to_3" and current_input_port == "done_1" then
+        phase_Label := "dispatch_to_3"
+        Label_srv_1_free := 1
+        Label_server_count := Label_server_count - 1
+    elseif phase_Label == "dispatch_to_3" and current_input_port == "done_2" then
+        phase_Label := "dispatch_to_3"
+        Label_srv_2_free := 1
+        Label_server_count := Label_server_count - 1
+    elseif phase_Label == "dispatch_to_3" and current_input_port == "done_3" then
+        phase_Label := "dispatch_to_3"
+        Label_srv_3_free := 1
+        Label_server_count := Label_server_count - 1
+    endif
+endrule
+
+// Output function: lambda for Label
+rule output_function_Label() =
+    if phase_Label == "dispatch_to_1" then
+        output_value := "dispatch_1"
+    elseif phase_Label == "dispatch_to_2" then
+        output_value := "dispatch_2"
+    elseif phase_Label == "dispatch_to_3" then
+        output_value := "dispatch_3"
+    endif
+endrule
+
+// Internal transition: delta_int for Label_Srv_1
+rule internal_transition_Label_Srv_1() =
+    if phase_Label_Srv_1 == "busy" then
+        phase_Label_Srv_1 := "passive"
+    endif
+
+    // Update timing
+    tl_Label_Srv_1 := sim_clocktime
+    if phase_Label_Srv_1 == "passive" then
+        tn_Label_Srv_1 := sim_clocktime + 999999999.0
+    else
+        tn_Label_Srv_1 := sim_clocktime + service_time_label
+    endif
+endrule
+
+// External transition: delta_ext for Label_Srv_1
+rule external_transition_Label_Srv_1() =
+    if phase_Label_Srv_1 == "passive" then
+        phase_Label_Srv_1 := "busy"
+        tl_Label_Srv_1 := sim_clocktime
+        tn_Label_Srv_1 := sim_clocktime + service_time_label
+    endif
+endrule
+
+// Output function: lambda for Label_Srv_1
+rule output_function_Label_Srv_1() =
+    if phase_Label_Srv_1 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Label_Srv_2
+rule internal_transition_Label_Srv_2() =
+    if phase_Label_Srv_2 == "busy" then
+        phase_Label_Srv_2 := "passive"
+    endif
+
+    // Update timing
+    tl_Label_Srv_2 := sim_clocktime
+    if phase_Label_Srv_2 == "passive" then
+        tn_Label_Srv_2 := sim_clocktime + 999999999.0
+    else
+        tn_Label_Srv_2 := sim_clocktime + service_time_label
+    endif
+endrule
+
+// External transition: delta_ext for Label_Srv_2
+rule external_transition_Label_Srv_2() =
+    if phase_Label_Srv_2 == "passive" then
+        phase_Label_Srv_2 := "busy"
+        tl_Label_Srv_2 := sim_clocktime
+        tn_Label_Srv_2 := sim_clocktime + service_time_label
+    endif
+endrule
+
+// Output function: lambda for Label_Srv_2
+rule output_function_Label_Srv_2() =
+    if phase_Label_Srv_2 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Label_Srv_3
+rule internal_transition_Label_Srv_3() =
+    if phase_Label_Srv_3 == "busy" then
+        phase_Label_Srv_3 := "passive"
+    endif
+
+    // Update timing
+    tl_Label_Srv_3 := sim_clocktime
+    if phase_Label_Srv_3 == "passive" then
+        tn_Label_Srv_3 := sim_clocktime + 999999999.0
+    else
+        tn_Label_Srv_3 := sim_clocktime + service_time_label
+    endif
+endrule
+
+// External transition: delta_ext for Label_Srv_3
+rule external_transition_Label_Srv_3() =
+    if phase_Label_Srv_3 == "passive" then
+        phase_Label_Srv_3 := "busy"
+        tl_Label_Srv_3 := sim_clocktime
+        tn_Label_Srv_3 := sim_clocktime + service_time_label
+    endif
+endrule
+
+// Output function: lambda for Label_Srv_3
+rule output_function_Label_Srv_3() =
+    if phase_Label_Srv_3 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Scan
+rule internal_transition_Scan() =
+    if phase_Scan == "dispatch_to_1" and Scan_queue_count == 1 then
+        phase_Scan := "idle"
+        Scan_queue_count := Scan_queue_count - 1
+        Scan_srv_1_free := 0
+        Scan_server_count := Scan_server_count + 1
+    elseif phase_Scan == "dispatch_to_1" and Scan_queue_count > 1 then
+        phase_Scan := "idle"
+        Scan_queue_count := Scan_queue_count - 1
+        Scan_srv_1_free := 0
+        Scan_server_count := Scan_server_count + 1
+    endif
+
+    // Update timing
+    tl_Scan := sim_clocktime
+    if phase_Scan == "idle" then
+        tn_Scan := sim_clocktime + 999999999.0
+    else
+        tn_Scan := sim_clocktime + 0.0
+    endif
+endrule
+
+// External transition: delta_ext for Scan
+rule external_transition_Scan() =
+    if phase_Scan == "idle" and current_input_port == "in" and Scan_srv_1_free == 1 then
+        phase_Scan := "dispatch_to_1"
+        Scan_queue_count := Scan_queue_count + 1
+        tl_Scan := sim_clocktime
+        tn_Scan := sim_clocktime + 0.0
+    elseif phase_Scan == "idle" and current_input_port == "in" and Scan_srv_1_free == 0 then
+        phase_Scan := "idle"
+        Scan_queue_count := Scan_queue_count + 1
+    elseif phase_Scan == "dispatch_to_1" and current_input_port == "in" then
+        phase_Scan := "dispatch_to_1"
+        Scan_queue_count := Scan_queue_count + 1
+    elseif phase_Scan == "idle" and current_input_port == "done_1" and Scan_queue_count > 0 then
+        phase_Scan := "dispatch_to_1"
+        Scan_srv_1_free := 1
+        Scan_server_count := Scan_server_count - 1
+        tl_Scan := sim_clocktime
+        tn_Scan := sim_clocktime + 0.0
+    elseif phase_Scan == "idle" and current_input_port == "done_1" and Scan_queue_count == 0 then
+        phase_Scan := "idle"
+        Scan_srv_1_free := 1
+        Scan_server_count := Scan_server_count - 1
+    elseif phase_Scan == "dispatch_to_1" and current_input_port == "done_1" then
+        phase_Scan := "dispatch_to_1"
+        Scan_srv_1_free := 1
+        Scan_server_count := Scan_server_count - 1
+    endif
+endrule
+
+// Output function: lambda for Scan
+rule output_function_Scan() =
+    if phase_Scan == "dispatch_to_1" then
+        output_value := "dispatch_1"
+    endif
+endrule
+
+// Internal transition: delta_int for Scan_Srv_1
+rule internal_transition_Scan_Srv_1() =
+    if phase_Scan_Srv_1 == "busy" then
+        phase_Scan_Srv_1 := "passive"
+    endif
+
+    // Update timing
+    tl_Scan_Srv_1 := sim_clocktime
+    if phase_Scan_Srv_1 == "passive" then
+        tn_Scan_Srv_1 := sim_clocktime + 999999999.0
+    else
+        tn_Scan_Srv_1 := sim_clocktime + service_time_scan
+    endif
+endrule
+
+// External transition: delta_ext for Scan_Srv_1
+rule external_transition_Scan_Srv_1() =
+    if phase_Scan_Srv_1 == "passive" then
+        phase_Scan_Srv_1 := "busy"
+        tl_Scan_Srv_1 := sim_clocktime
+        tn_Scan_Srv_1 := sim_clocktime + service_time_scan
+    endif
+endrule
+
+// Output function: lambda for Scan_Srv_1
+rule output_function_Scan_Srv_1() =
+    if phase_Scan_Srv_1 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Pack
+rule internal_transition_Pack() =
+    if phase_Pack == "dispatch_to_1" and Pack_queue_count > 1 and Pack_srv_2_free == 1 then
+        phase_Pack := "dispatch_to_2"
+        Pack_queue_count := Pack_queue_count - 1
+        Pack_srv_1_free := 0
+        Pack_server_count := Pack_server_count + 1
+    elseif phase_Pack == "dispatch_to_1" and Pack_queue_count > 1 and Pack_srv_2_free == 0 and Pack_srv_3_free == 1 then
+        phase_Pack := "dispatch_to_3"
+        Pack_queue_count := Pack_queue_count - 1
+        Pack_srv_1_free := 0
+        Pack_server_count := Pack_server_count + 1
+    elseif phase_Pack == "dispatch_to_1" and Pack_queue_count == 1 then
+        phase_Pack := "idle"
+        Pack_queue_count := Pack_queue_count - 1
+        Pack_srv_1_free := 0
+        Pack_server_count := Pack_server_count + 1
+    elseif phase_Pack == "dispatch_to_1" and Pack_queue_count > 1 and Pack_srv_2_free == 0 and Pack_srv_3_free == 0 then
+        phase_Pack := "idle"
+        Pack_queue_count := Pack_queue_count - 1
+        Pack_srv_1_free := 0
+        Pack_server_count := Pack_server_count + 1
+    elseif phase_Pack == "dispatch_to_2" and Pack_queue_count > 1 and Pack_srv_3_free == 1 then
+        phase_Pack := "dispatch_to_3"
+        Pack_queue_count := Pack_queue_count - 1
+        Pack_srv_2_free := 0
+        Pack_server_count := Pack_server_count + 1
+    elseif phase_Pack == "dispatch_to_2" and Pack_queue_count == 1 then
+        phase_Pack := "idle"
+        Pack_queue_count := Pack_queue_count - 1
+        Pack_srv_2_free := 0
+        Pack_server_count := Pack_server_count + 1
+    elseif phase_Pack == "dispatch_to_2" and Pack_queue_count > 1 and Pack_srv_3_free == 0 then
+        phase_Pack := "idle"
+        Pack_queue_count := Pack_queue_count - 1
+        Pack_srv_2_free := 0
+        Pack_server_count := Pack_server_count + 1
+    elseif phase_Pack == "dispatch_to_3" and Pack_queue_count == 1 then
+        phase_Pack := "idle"
+        Pack_queue_count := Pack_queue_count - 1
+        Pack_srv_3_free := 0
+        Pack_server_count := Pack_server_count + 1
+    elseif phase_Pack == "dispatch_to_3" and Pack_queue_count > 1 then
+        phase_Pack := "idle"
+        Pack_queue_count := Pack_queue_count - 1
+        Pack_srv_3_free := 0
+        Pack_server_count := Pack_server_count + 1
+    endif
+
+    // Update timing
+    tl_Pack := sim_clocktime
+    if phase_Pack == "idle" then
+        tn_Pack := sim_clocktime + 999999999.0
+    elseif phase_Pack == "dispatch_to_1" then
+        tn_Pack := sim_clocktime + 0.0
+    elseif phase_Pack == "dispatch_to_2" then
+        tn_Pack := sim_clocktime + 0.0
+    else
+        tn_Pack := sim_clocktime + 0.0
+    endif
+endrule
+
+// External transition: delta_ext for Pack
+rule external_transition_Pack() =
+    if phase_Pack == "idle" and current_input_port == "in" and Pack_srv_1_free == 1 then
+        phase_Pack := "dispatch_to_1"
+        Pack_queue_count := Pack_queue_count + 1
+        tl_Pack := sim_clocktime
+        tn_Pack := sim_clocktime + 0.0
+    elseif phase_Pack == "idle" and current_input_port == "in" and Pack_srv_1_free == 0 and Pack_srv_2_free == 1 then
+        phase_Pack := "dispatch_to_2"
+        Pack_queue_count := Pack_queue_count + 1
+        tl_Pack := sim_clocktime
+        tn_Pack := sim_clocktime + 0.0
+    elseif phase_Pack == "idle" and current_input_port == "in" and Pack_srv_1_free == 0 and Pack_srv_2_free == 0 and Pack_srv_3_free == 1 then
+        phase_Pack := "dispatch_to_3"
+        Pack_queue_count := Pack_queue_count + 1
+        tl_Pack := sim_clocktime
+        tn_Pack := sim_clocktime + 0.0
+    elseif phase_Pack == "idle" and current_input_port == "in" and Pack_srv_1_free == 0 and Pack_srv_2_free == 0 and Pack_srv_3_free == 0 then
+        phase_Pack := "idle"
+        Pack_queue_count := Pack_queue_count + 1
+    elseif phase_Pack == "dispatch_to_1" and current_input_port == "in" then
+        phase_Pack := "dispatch_to_1"
+        Pack_queue_count := Pack_queue_count + 1
+    elseif phase_Pack == "dispatch_to_2" and current_input_port == "in" then
+        phase_Pack := "dispatch_to_2"
+        Pack_queue_count := Pack_queue_count + 1
+    elseif phase_Pack == "dispatch_to_3" and current_input_port == "in" then
+        phase_Pack := "dispatch_to_3"
+        Pack_queue_count := Pack_queue_count + 1
+    elseif phase_Pack == "idle" and current_input_port == "done_1" and Pack_queue_count > 0 then
+        phase_Pack := "dispatch_to_1"
+        Pack_srv_1_free := 1
+        Pack_server_count := Pack_server_count - 1
+        tl_Pack := sim_clocktime
+        tn_Pack := sim_clocktime + 0.0
+    elseif phase_Pack == "idle" and current_input_port == "done_1" and Pack_queue_count == 0 then
+        phase_Pack := "idle"
+        Pack_srv_1_free := 1
+        Pack_server_count := Pack_server_count - 1
+    elseif phase_Pack == "idle" and current_input_port == "done_2" and Pack_queue_count > 0 then
+        phase_Pack := "dispatch_to_2"
+        Pack_srv_2_free := 1
+        Pack_server_count := Pack_server_count - 1
+        tl_Pack := sim_clocktime
+        tn_Pack := sim_clocktime + 0.0
+    elseif phase_Pack == "idle" and current_input_port == "done_2" and Pack_queue_count == 0 then
+        phase_Pack := "idle"
+        Pack_srv_2_free := 1
+        Pack_server_count := Pack_server_count - 1
+    elseif phase_Pack == "idle" and current_input_port == "done_3" and Pack_queue_count > 0 then
+        phase_Pack := "dispatch_to_3"
+        Pack_srv_3_free := 1
+        Pack_server_count := Pack_server_count - 1
+        tl_Pack := sim_clocktime
+        tn_Pack := sim_clocktime + 0.0
+    elseif phase_Pack == "idle" and current_input_port == "done_3" and Pack_queue_count == 0 then
+        phase_Pack := "idle"
+        Pack_srv_3_free := 1
+        Pack_server_count := Pack_server_count - 1
+    elseif phase_Pack == "dispatch_to_1" and current_input_port == "done_1" then
+        phase_Pack := "dispatch_to_1"
+        Pack_srv_1_free := 1
+        Pack_server_count := Pack_server_count - 1
+    elseif phase_Pack == "dispatch_to_1" and current_input_port == "done_2" then
+        phase_Pack := "dispatch_to_1"
+        Pack_srv_2_free := 1
+        Pack_server_count := Pack_server_count - 1
+    elseif phase_Pack == "dispatch_to_1" and current_input_port == "done_3" then
+        phase_Pack := "dispatch_to_1"
+        Pack_srv_3_free := 1
+        Pack_server_count := Pack_server_count - 1
+    elseif phase_Pack == "dispatch_to_2" and current_input_port == "done_1" then
+        phase_Pack := "dispatch_to_2"
+        Pack_srv_1_free := 1
+        Pack_server_count := Pack_server_count - 1
+    elseif phase_Pack == "dispatch_to_2" and current_input_port == "done_2" then
+        phase_Pack := "dispatch_to_2"
+        Pack_srv_2_free := 1
+        Pack_server_count := Pack_server_count - 1
+    elseif phase_Pack == "dispatch_to_2" and current_input_port == "done_3" then
+        phase_Pack := "dispatch_to_2"
+        Pack_srv_3_free := 1
+        Pack_server_count := Pack_server_count - 1
+    elseif phase_Pack == "dispatch_to_3" and current_input_port == "done_1" then
+        phase_Pack := "dispatch_to_3"
+        Pack_srv_1_free := 1
+        Pack_server_count := Pack_server_count - 1
+    elseif phase_Pack == "dispatch_to_3" and current_input_port == "done_2" then
+        phase_Pack := "dispatch_to_3"
+        Pack_srv_2_free := 1
+        Pack_server_count := Pack_server_count - 1
+    elseif phase_Pack == "dispatch_to_3" and current_input_port == "done_3" then
+        phase_Pack := "dispatch_to_3"
+        Pack_srv_3_free := 1
+        Pack_server_count := Pack_server_count - 1
+    endif
+endrule
+
+// Output function: lambda for Pack
+rule output_function_Pack() =
+    if phase_Pack == "dispatch_to_1" then
+        output_value := "dispatch_1"
+    elseif phase_Pack == "dispatch_to_2" then
+        output_value := "dispatch_2"
+    elseif phase_Pack == "dispatch_to_3" then
+        output_value := "dispatch_3"
+    endif
+endrule
+
+// Internal transition: delta_int for Pack_Srv_1
+rule internal_transition_Pack_Srv_1() =
+    if phase_Pack_Srv_1 == "busy" then
+        phase_Pack_Srv_1 := "passive"
+    endif
+
+    // Update timing
+    tl_Pack_Srv_1 := sim_clocktime
+    if phase_Pack_Srv_1 == "passive" then
+        tn_Pack_Srv_1 := sim_clocktime + 999999999.0
+    else
+        tn_Pack_Srv_1 := sim_clocktime + service_time_pack
+    endif
+endrule
+
+// External transition: delta_ext for Pack_Srv_1
+rule external_transition_Pack_Srv_1() =
+    if phase_Pack_Srv_1 == "passive" then
+        phase_Pack_Srv_1 := "busy"
+        tl_Pack_Srv_1 := sim_clocktime
+        tn_Pack_Srv_1 := sim_clocktime + service_time_pack
+    endif
+endrule
+
+// Output function: lambda for Pack_Srv_1
+rule output_function_Pack_Srv_1() =
+    if phase_Pack_Srv_1 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Pack_Srv_2
+rule internal_transition_Pack_Srv_2() =
+    if phase_Pack_Srv_2 == "busy" then
+        phase_Pack_Srv_2 := "passive"
+    endif
+
+    // Update timing
+    tl_Pack_Srv_2 := sim_clocktime
+    if phase_Pack_Srv_2 == "passive" then
+        tn_Pack_Srv_2 := sim_clocktime + 999999999.0
+    else
+        tn_Pack_Srv_2 := sim_clocktime + service_time_pack
+    endif
+endrule
+
+// External transition: delta_ext for Pack_Srv_2
+rule external_transition_Pack_Srv_2() =
+    if phase_Pack_Srv_2 == "passive" then
+        phase_Pack_Srv_2 := "busy"
+        tl_Pack_Srv_2 := sim_clocktime
+        tn_Pack_Srv_2 := sim_clocktime + service_time_pack
+    endif
+endrule
+
+// Output function: lambda for Pack_Srv_2
+rule output_function_Pack_Srv_2() =
+    if phase_Pack_Srv_2 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Pack_Srv_3
+rule internal_transition_Pack_Srv_3() =
+    if phase_Pack_Srv_3 == "busy" then
+        phase_Pack_Srv_3 := "passive"
+    endif
+
+    // Update timing
+    tl_Pack_Srv_3 := sim_clocktime
+    if phase_Pack_Srv_3 == "passive" then
+        tn_Pack_Srv_3 := sim_clocktime + 999999999.0
+    else
+        tn_Pack_Srv_3 := sim_clocktime + service_time_pack
+    endif
+endrule
+
+// External transition: delta_ext for Pack_Srv_3
+rule external_transition_Pack_Srv_3() =
+    if phase_Pack_Srv_3 == "passive" then
+        phase_Pack_Srv_3 := "busy"
+        tl_Pack_Srv_3 := sim_clocktime
+        tn_Pack_Srv_3 := sim_clocktime + service_time_pack
+    endif
+endrule
+
+// Output function: lambda for Pack_Srv_3
+rule output_function_Pack_Srv_3() =
+    if phase_Pack_Srv_3 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Release
+rule internal_transition_Release() =
+    if phase_Release == "dispatch_to_1" and Release_queue_count > 1 and Release_srv_2_free == 1 then
+        phase_Release := "dispatch_to_2"
+        Release_queue_count := Release_queue_count - 1
+        Release_srv_1_free := 0
+        Release_server_count := Release_server_count + 1
+    elseif phase_Release == "dispatch_to_1" and Release_queue_count == 1 then
+        phase_Release := "idle"
+        Release_queue_count := Release_queue_count - 1
+        Release_srv_1_free := 0
+        Release_server_count := Release_server_count + 1
+    elseif phase_Release == "dispatch_to_1" and Release_queue_count > 1 and Release_srv_2_free == 0 then
+        phase_Release := "idle"
+        Release_queue_count := Release_queue_count - 1
+        Release_srv_1_free := 0
+        Release_server_count := Release_server_count + 1
+    elseif phase_Release == "dispatch_to_2" and Release_queue_count == 1 then
+        phase_Release := "idle"
+        Release_queue_count := Release_queue_count - 1
+        Release_srv_2_free := 0
+        Release_server_count := Release_server_count + 1
+    elseif phase_Release == "dispatch_to_2" and Release_queue_count > 1 then
+        phase_Release := "idle"
+        Release_queue_count := Release_queue_count - 1
+        Release_srv_2_free := 0
+        Release_server_count := Release_server_count + 1
+    endif
+
+    // Update timing
+    tl_Release := sim_clocktime
+    if phase_Release == "idle" then
+        tn_Release := sim_clocktime + 999999999.0
+    elseif phase_Release == "dispatch_to_1" then
+        tn_Release := sim_clocktime + 0.0
+    else
+        tn_Release := sim_clocktime + 0.0
+    endif
+endrule
+
+// External transition: delta_ext for Release
+rule external_transition_Release() =
+    if phase_Release == "idle" and current_input_port == "in" and Release_srv_1_free == 1 then
+        phase_Release := "dispatch_to_1"
+        Release_queue_count := Release_queue_count + 1
+        tl_Release := sim_clocktime
+        tn_Release := sim_clocktime + 0.0
+    elseif phase_Release == "idle" and current_input_port == "in" and Release_srv_1_free == 0 and Release_srv_2_free == 1 then
+        phase_Release := "dispatch_to_2"
+        Release_queue_count := Release_queue_count + 1
+        tl_Release := sim_clocktime
+        tn_Release := sim_clocktime + 0.0
+    elseif phase_Release == "idle" and current_input_port == "in" and Release_srv_1_free == 0 and Release_srv_2_free == 0 then
+        phase_Release := "idle"
+        Release_queue_count := Release_queue_count + 1
+    elseif phase_Release == "dispatch_to_1" and current_input_port == "in" then
+        phase_Release := "dispatch_to_1"
+        Release_queue_count := Release_queue_count + 1
+    elseif phase_Release == "dispatch_to_2" and current_input_port == "in" then
+        phase_Release := "dispatch_to_2"
+        Release_queue_count := Release_queue_count + 1
+    elseif phase_Release == "idle" and current_input_port == "done_1" and Release_queue_count > 0 then
+        phase_Release := "dispatch_to_1"
+        Release_srv_1_free := 1
+        Release_server_count := Release_server_count - 1
+        tl_Release := sim_clocktime
+        tn_Release := sim_clocktime + 0.0
+    elseif phase_Release == "idle" and current_input_port == "done_1" and Release_queue_count == 0 then
+        phase_Release := "idle"
+        Release_srv_1_free := 1
+        Release_server_count := Release_server_count - 1
+    elseif phase_Release == "idle" and current_input_port == "done_2" and Release_queue_count > 0 then
+        phase_Release := "dispatch_to_2"
+        Release_srv_2_free := 1
+        Release_server_count := Release_server_count - 1
+        tl_Release := sim_clocktime
+        tn_Release := sim_clocktime + 0.0
+    elseif phase_Release == "idle" and current_input_port == "done_2" and Release_queue_count == 0 then
+        phase_Release := "idle"
+        Release_srv_2_free := 1
+        Release_server_count := Release_server_count - 1
+    elseif phase_Release == "dispatch_to_1" and current_input_port == "done_1" then
+        phase_Release := "dispatch_to_1"
+        Release_srv_1_free := 1
+        Release_server_count := Release_server_count - 1
+    elseif phase_Release == "dispatch_to_1" and current_input_port == "done_2" then
+        phase_Release := "dispatch_to_1"
+        Release_srv_2_free := 1
+        Release_server_count := Release_server_count - 1
+    elseif phase_Release == "dispatch_to_2" and current_input_port == "done_1" then
+        phase_Release := "dispatch_to_2"
+        Release_srv_1_free := 1
+        Release_server_count := Release_server_count - 1
+    elseif phase_Release == "dispatch_to_2" and current_input_port == "done_2" then
+        phase_Release := "dispatch_to_2"
+        Release_srv_2_free := 1
+        Release_server_count := Release_server_count - 1
+    endif
+endrule
+
+// Output function: lambda for Release
+rule output_function_Release() =
+    if phase_Release == "dispatch_to_1" then
+        output_value := "dispatch_1"
+    elseif phase_Release == "dispatch_to_2" then
+        output_value := "dispatch_2"
+    endif
+endrule
+
+// Internal transition: delta_int for Release_Srv_1
+rule internal_transition_Release_Srv_1() =
+    if phase_Release_Srv_1 == "busy" then
+        phase_Release_Srv_1 := "passive"
+    endif
+
+    // Update timing
+    tl_Release_Srv_1 := sim_clocktime
+    if phase_Release_Srv_1 == "passive" then
+        tn_Release_Srv_1 := sim_clocktime + 999999999.0
+    else
+        tn_Release_Srv_1 := sim_clocktime + service_time_release
+    endif
+endrule
+
+// External transition: delta_ext for Release_Srv_1
+rule external_transition_Release_Srv_1() =
+    if phase_Release_Srv_1 == "passive" then
+        phase_Release_Srv_1 := "busy"
+        tl_Release_Srv_1 := sim_clocktime
+        tn_Release_Srv_1 := sim_clocktime + service_time_release
+    endif
+endrule
+
+// Output function: lambda for Release_Srv_1
+rule output_function_Release_Srv_1() =
+    if phase_Release_Srv_1 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Release_Srv_2
+rule internal_transition_Release_Srv_2() =
+    if phase_Release_Srv_2 == "busy" then
+        phase_Release_Srv_2 := "passive"
+    endif
+
+    // Update timing
+    tl_Release_Srv_2 := sim_clocktime
+    if phase_Release_Srv_2 == "passive" then
+        tn_Release_Srv_2 := sim_clocktime + 999999999.0
+    else
+        tn_Release_Srv_2 := sim_clocktime + service_time_release
+    endif
+endrule
+
+// External transition: delta_ext for Release_Srv_2
+rule external_transition_Release_Srv_2() =
+    if phase_Release_Srv_2 == "passive" then
+        phase_Release_Srv_2 := "busy"
+        tl_Release_Srv_2 := sim_clocktime
+        tn_Release_Srv_2 := sim_clocktime + service_time_release
+    endif
+endrule
+
+// Output function: lambda for Release_Srv_2
+rule output_function_Release_Srv_2() =
+    if phase_Release_Srv_2 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Sink
+rule internal_transition_Sink() =
+    skip
+endrule
+
+// External transition: delta_ext for Sink
+rule external_transition_Sink() =
+    if phase_Sink == "idle" then
+        phase_Sink := "idle"
+        Sink_departure_count := Sink_departure_count + 1
+    endif
+endrule
+
+// Output function: lambda for Sink
+rule output_function_Sink() =
+    skip
+endrule
+
+
+// ============================================================
+// Coordinator Rules
+// ============================================================
+
+// Select imminent component: sort event list, pop earliest (tie-break by Select priority)
+rule select_imminent() =
+    // Sort event list by scheduled time (stable sort preserves Select priority)
+    lib.sort(future_event_list, "cel_time")
+
+    // Pop imminent (earliest) event
+    let imminent_event = lib.pop(future_event_list)
+    imminent_component := cel_component(imminent_event)
+
+    // Advance clock to event time
+    sim_clocktime := cel_time(imminent_event)
+endrule
+
+// Route output from imminent component to influenced receivers
+rule route_output() =
+    if imminent_component == "GenZA1" then
+        // Route: GenZA1.out -> PickA.in
+        current_input_port := "in"
+        external_transition_PickA()
+    elseif imminent_component == "GenZA2" then
+        // Route: GenZA2.out -> PickA.in
+        current_input_port := "in"
+        external_transition_PickA()
+    elseif imminent_component == "GenZB1" then
+        // Route: GenZB1.out -> PickB.in
+        current_input_port := "in"
+        external_transition_PickB()
+    elseif imminent_component == "GenZB2" then
+        // Route: GenZB2.out -> PickB.in
+        current_input_port := "in"
+        external_transition_PickB()
+    elseif imminent_component == "PickA" then
+        if output_value == "dispatch_1" then
+            // Route: PickA.dispatch_1 -> PickA_Srv_1.in
+            current_input_port := "in"
+            external_transition_PickA_Srv_1()
+        elseif output_value == "dispatch_2" then
+            // Route: PickA.dispatch_2 -> PickA_Srv_2.in
+            current_input_port := "in"
+            external_transition_PickA_Srv_2()
+        elseif output_value == "dispatch_3" then
+            // Route: PickA.dispatch_3 -> PickA_Srv_3.in
+            current_input_port := "in"
+            external_transition_PickA_Srv_3()
+        elseif output_value == "dispatch_4" then
+            // Route: PickA.dispatch_4 -> PickA_Srv_4.in
+            current_input_port := "in"
+            external_transition_PickA_Srv_4()
+        endif
+    elseif imminent_component == "PickA_Srv_1" then
+        // Route: PickA_Srv_1.out -> Label.in
+        current_input_port := "in"
+        external_transition_Label()
+        // Route: PickA_Srv_1.out -> PickA.done_1
+        current_input_port := "done_1"
+        external_transition_PickA()
+    elseif imminent_component == "PickA_Srv_2" then
+        // Route: PickA_Srv_2.out -> Label.in
+        current_input_port := "in"
+        external_transition_Label()
+        // Route: PickA_Srv_2.out -> PickA.done_2
+        current_input_port := "done_2"
+        external_transition_PickA()
+    elseif imminent_component == "PickA_Srv_3" then
+        // Route: PickA_Srv_3.out -> Label.in
+        current_input_port := "in"
+        external_transition_Label()
+        // Route: PickA_Srv_3.out -> PickA.done_3
+        current_input_port := "done_3"
+        external_transition_PickA()
+    elseif imminent_component == "PickA_Srv_4" then
+        // Route: PickA_Srv_4.out -> Label.in
+        current_input_port := "in"
+        external_transition_Label()
+        // Route: PickA_Srv_4.out -> PickA.done_4
+        current_input_port := "done_4"
+        external_transition_PickA()
+    elseif imminent_component == "PickB" then
+        if output_value == "dispatch_1" then
+            // Route: PickB.dispatch_1 -> PickB_Srv_1.in
+            current_input_port := "in"
+            external_transition_PickB_Srv_1()
+        elseif output_value == "dispatch_2" then
+            // Route: PickB.dispatch_2 -> PickB_Srv_2.in
+            current_input_port := "in"
+            external_transition_PickB_Srv_2()
+        endif
+    elseif imminent_component == "PickB_Srv_1" then
+        // Route: PickB_Srv_1.out -> Label.in
+        current_input_port := "in"
+        external_transition_Label()
+        // Route: PickB_Srv_1.out -> PickB.done_1
+        current_input_port := "done_1"
+        external_transition_PickB()
+    elseif imminent_component == "PickB_Srv_2" then
+        // Route: PickB_Srv_2.out -> Label.in
+        current_input_port := "in"
+        external_transition_Label()
+        // Route: PickB_Srv_2.out -> PickB.done_2
+        current_input_port := "done_2"
+        external_transition_PickB()
+    elseif imminent_component == "Label" then
+        if output_value == "dispatch_1" then
+            // Route: Label.dispatch_1 -> Label_Srv_1.in
+            current_input_port := "in"
+            external_transition_Label_Srv_1()
+        elseif output_value == "dispatch_2" then
+            // Route: Label.dispatch_2 -> Label_Srv_2.in
+            current_input_port := "in"
+            external_transition_Label_Srv_2()
+        elseif output_value == "dispatch_3" then
+            // Route: Label.dispatch_3 -> Label_Srv_3.in
+            current_input_port := "in"
+            external_transition_Label_Srv_3()
+        endif
+    elseif imminent_component == "Label_Srv_1" then
+        // Route: Label_Srv_1.out -> Scan.in
+        current_input_port := "in"
+        external_transition_Scan()
+        // Route: Label_Srv_1.out -> Label.done_1
+        current_input_port := "done_1"
+        external_transition_Label()
+    elseif imminent_component == "Label_Srv_2" then
+        // Route: Label_Srv_2.out -> Scan.in
+        current_input_port := "in"
+        external_transition_Scan()
+        // Route: Label_Srv_2.out -> Label.done_2
+        current_input_port := "done_2"
+        external_transition_Label()
+    elseif imminent_component == "Label_Srv_3" then
+        // Route: Label_Srv_3.out -> Scan.in
+        current_input_port := "in"
+        external_transition_Scan()
+        // Route: Label_Srv_3.out -> Label.done_3
+        current_input_port := "done_3"
+        external_transition_Label()
+    elseif imminent_component == "Scan" then
+        // Route: Scan.dispatch_1 -> Scan_Srv_1.in
+        current_input_port := "in"
+        external_transition_Scan_Srv_1()
+    elseif imminent_component == "Scan_Srv_1" then
+        // Route: Scan_Srv_1.out -> Pack.in
+        current_input_port := "in"
+        external_transition_Pack()
+        // Route: Scan_Srv_1.out -> Scan.done_1
+        current_input_port := "done_1"
+        external_transition_Scan()
+    elseif imminent_component == "Pack" then
+        if output_value == "dispatch_1" then
+            // Route: Pack.dispatch_1 -> Pack_Srv_1.in
+            current_input_port := "in"
+            external_transition_Pack_Srv_1()
+        elseif output_value == "dispatch_2" then
+            // Route: Pack.dispatch_2 -> Pack_Srv_2.in
+            current_input_port := "in"
+            external_transition_Pack_Srv_2()
+        elseif output_value == "dispatch_3" then
+            // Route: Pack.dispatch_3 -> Pack_Srv_3.in
+            current_input_port := "in"
+            external_transition_Pack_Srv_3()
+        endif
+    elseif imminent_component == "Pack_Srv_1" then
+        // Route: Pack_Srv_1.out -> Release.in
+        current_input_port := "in"
+        external_transition_Release()
+        // Route: Pack_Srv_1.out -> Pack.done_1
+        current_input_port := "done_1"
+        external_transition_Pack()
+    elseif imminent_component == "Pack_Srv_2" then
+        // Route: Pack_Srv_2.out -> Release.in
+        current_input_port := "in"
+        external_transition_Release()
+        // Route: Pack_Srv_2.out -> Pack.done_2
+        current_input_port := "done_2"
+        external_transition_Pack()
+    elseif imminent_component == "Pack_Srv_3" then
+        // Route: Pack_Srv_3.out -> Release.in
+        current_input_port := "in"
+        external_transition_Release()
+        // Route: Pack_Srv_3.out -> Pack.done_3
+        current_input_port := "done_3"
+        external_transition_Pack()
+    elseif imminent_component == "Release" then
+        if output_value == "dispatch_1" then
+            // Route: Release.dispatch_1 -> Release_Srv_1.in
+            current_input_port := "in"
+            external_transition_Release_Srv_1()
+        elseif output_value == "dispatch_2" then
+            // Route: Release.dispatch_2 -> Release_Srv_2.in
+            current_input_port := "in"
+            external_transition_Release_Srv_2()
+        endif
+    elseif imminent_component == "Release_Srv_1" then
+        // Route: Release_Srv_1.out -> Sink.in
+        current_input_port := "in"
+        external_transition_Sink()
+        // Route: Release_Srv_1.out -> Release.done_1
+        current_input_port := "done_1"
+        external_transition_Release()
+    elseif imminent_component == "Release_Srv_2" then
+        // Route: Release_Srv_2.out -> Sink.in
+        current_input_port := "in"
+        external_transition_Sink()
+        // Route: Release_Srv_2.out -> Release.done_2
+        current_input_port := "done_2"
+        external_transition_Release()
+    endif
+endrule
+
+// Rebuild event list from current tn values (Select priority order for tie-breaking)
+rule update_event_list() =
+    future_event_list := []
+
+    let evt_GenZA1 = new ComponentEvent
+    cel_component(evt_GenZA1) := "GenZA1"
+    cel_time(evt_GenZA1) := tn_GenZA1
+    lib.add(future_event_list, evt_GenZA1)
+
+    let evt_GenZA2 = new ComponentEvent
+    cel_component(evt_GenZA2) := "GenZA2"
+    cel_time(evt_GenZA2) := tn_GenZA2
+    lib.add(future_event_list, evt_GenZA2)
+
+    let evt_GenZB1 = new ComponentEvent
+    cel_component(evt_GenZB1) := "GenZB1"
+    cel_time(evt_GenZB1) := tn_GenZB1
+    lib.add(future_event_list, evt_GenZB1)
+
+    let evt_GenZB2 = new ComponentEvent
+    cel_component(evt_GenZB2) := "GenZB2"
+    cel_time(evt_GenZB2) := tn_GenZB2
+    lib.add(future_event_list, evt_GenZB2)
+
+    let evt_PickA = new ComponentEvent
+    cel_component(evt_PickA) := "PickA"
+    cel_time(evt_PickA) := tn_PickA
+    lib.add(future_event_list, evt_PickA)
+
+    let evt_PickA_Srv_1 = new ComponentEvent
+    cel_component(evt_PickA_Srv_1) := "PickA_Srv_1"
+    cel_time(evt_PickA_Srv_1) := tn_PickA_Srv_1
+    lib.add(future_event_list, evt_PickA_Srv_1)
+
+    let evt_PickA_Srv_2 = new ComponentEvent
+    cel_component(evt_PickA_Srv_2) := "PickA_Srv_2"
+    cel_time(evt_PickA_Srv_2) := tn_PickA_Srv_2
+    lib.add(future_event_list, evt_PickA_Srv_2)
+
+    let evt_PickA_Srv_3 = new ComponentEvent
+    cel_component(evt_PickA_Srv_3) := "PickA_Srv_3"
+    cel_time(evt_PickA_Srv_3) := tn_PickA_Srv_3
+    lib.add(future_event_list, evt_PickA_Srv_3)
+
+    let evt_PickA_Srv_4 = new ComponentEvent
+    cel_component(evt_PickA_Srv_4) := "PickA_Srv_4"
+    cel_time(evt_PickA_Srv_4) := tn_PickA_Srv_4
+    lib.add(future_event_list, evt_PickA_Srv_4)
+
+    let evt_PickB = new ComponentEvent
+    cel_component(evt_PickB) := "PickB"
+    cel_time(evt_PickB) := tn_PickB
+    lib.add(future_event_list, evt_PickB)
+
+    let evt_PickB_Srv_1 = new ComponentEvent
+    cel_component(evt_PickB_Srv_1) := "PickB_Srv_1"
+    cel_time(evt_PickB_Srv_1) := tn_PickB_Srv_1
+    lib.add(future_event_list, evt_PickB_Srv_1)
+
+    let evt_PickB_Srv_2 = new ComponentEvent
+    cel_component(evt_PickB_Srv_2) := "PickB_Srv_2"
+    cel_time(evt_PickB_Srv_2) := tn_PickB_Srv_2
+    lib.add(future_event_list, evt_PickB_Srv_2)
+
+    let evt_Label = new ComponentEvent
+    cel_component(evt_Label) := "Label"
+    cel_time(evt_Label) := tn_Label
+    lib.add(future_event_list, evt_Label)
+
+    let evt_Label_Srv_1 = new ComponentEvent
+    cel_component(evt_Label_Srv_1) := "Label_Srv_1"
+    cel_time(evt_Label_Srv_1) := tn_Label_Srv_1
+    lib.add(future_event_list, evt_Label_Srv_1)
+
+    let evt_Label_Srv_2 = new ComponentEvent
+    cel_component(evt_Label_Srv_2) := "Label_Srv_2"
+    cel_time(evt_Label_Srv_2) := tn_Label_Srv_2
+    lib.add(future_event_list, evt_Label_Srv_2)
+
+    let evt_Label_Srv_3 = new ComponentEvent
+    cel_component(evt_Label_Srv_3) := "Label_Srv_3"
+    cel_time(evt_Label_Srv_3) := tn_Label_Srv_3
+    lib.add(future_event_list, evt_Label_Srv_3)
+
+    let evt_Scan = new ComponentEvent
+    cel_component(evt_Scan) := "Scan"
+    cel_time(evt_Scan) := tn_Scan
+    lib.add(future_event_list, evt_Scan)
+
+    let evt_Scan_Srv_1 = new ComponentEvent
+    cel_component(evt_Scan_Srv_1) := "Scan_Srv_1"
+    cel_time(evt_Scan_Srv_1) := tn_Scan_Srv_1
+    lib.add(future_event_list, evt_Scan_Srv_1)
+
+    let evt_Pack = new ComponentEvent
+    cel_component(evt_Pack) := "Pack"
+    cel_time(evt_Pack) := tn_Pack
+    lib.add(future_event_list, evt_Pack)
+
+    let evt_Pack_Srv_1 = new ComponentEvent
+    cel_component(evt_Pack_Srv_1) := "Pack_Srv_1"
+    cel_time(evt_Pack_Srv_1) := tn_Pack_Srv_1
+    lib.add(future_event_list, evt_Pack_Srv_1)
+
+    let evt_Pack_Srv_2 = new ComponentEvent
+    cel_component(evt_Pack_Srv_2) := "Pack_Srv_2"
+    cel_time(evt_Pack_Srv_2) := tn_Pack_Srv_2
+    lib.add(future_event_list, evt_Pack_Srv_2)
+
+    let evt_Pack_Srv_3 = new ComponentEvent
+    cel_component(evt_Pack_Srv_3) := "Pack_Srv_3"
+    cel_time(evt_Pack_Srv_3) := tn_Pack_Srv_3
+    lib.add(future_event_list, evt_Pack_Srv_3)
+
+    let evt_Release = new ComponentEvent
+    cel_component(evt_Release) := "Release"
+    cel_time(evt_Release) := tn_Release
+    lib.add(future_event_list, evt_Release)
+
+    let evt_Release_Srv_1 = new ComponentEvent
+    cel_component(evt_Release_Srv_1) := "Release_Srv_1"
+    cel_time(evt_Release_Srv_1) := tn_Release_Srv_1
+    lib.add(future_event_list, evt_Release_Srv_1)
+
+    let evt_Release_Srv_2 = new ComponentEvent
+    cel_component(evt_Release_Srv_2) := "Release_Srv_2"
+    cel_time(evt_Release_Srv_2) := tn_Release_Srv_2
+    lib.add(future_event_list, evt_Release_Srv_2)
+
+    let evt_Sink = new ComponentEvent
+    cel_component(evt_Sink) := "Sink"
+    cel_time(evt_Sink) := tn_Sink
+    lib.add(future_event_list, evt_Sink)
+
+endrule
+
+// ============================================================
+// Abstract Simulator Algorithm
+// ============================================================
+
+// Initialization: send (i, t0) to all component simulators
+rule initialisation_routine() =
+    sim_clocktime := 0.0
+
+    // Initialize GenZA1
+    phase_GenZA1 := "active"
+    tl_GenZA1 := 0.0
+    tn_GenZA1 := interarrival_za1
+    GenZA1_job_count := 0
+
+    // Initialize GenZA2
+    phase_GenZA2 := "active"
+    tl_GenZA2 := 0.0
+    tn_GenZA2 := interarrival_za2
+    GenZA2_job_count := 0
+
+    // Initialize GenZB1
+    phase_GenZB1 := "active"
+    tl_GenZB1 := 0.0
+    tn_GenZB1 := interarrival_zb1
+    GenZB1_job_count := 0
+
+    // Initialize GenZB2
+    phase_GenZB2 := "active"
+    tl_GenZB2 := 0.0
+    tn_GenZB2 := interarrival_zb2
+    GenZB2_job_count := 0
+
+    // Initialize PickA
+    phase_PickA := "idle"
+    tl_PickA := 0.0
+    tn_PickA := 999999999.0
+    PickA_queue_count := 0
+    PickA_server_count := 0
+    PickA_srv_1_free := 1
+    PickA_srv_2_free := 1
+    PickA_srv_3_free := 1
+    PickA_srv_4_free := 1
+
+    // Initialize PickA_Srv_1
+    phase_PickA_Srv_1 := "passive"
+    tl_PickA_Srv_1 := 0.0
+    tn_PickA_Srv_1 := 999999999.0
+
+    // Initialize PickA_Srv_2
+    phase_PickA_Srv_2 := "passive"
+    tl_PickA_Srv_2 := 0.0
+    tn_PickA_Srv_2 := 999999999.0
+
+    // Initialize PickA_Srv_3
+    phase_PickA_Srv_3 := "passive"
+    tl_PickA_Srv_3 := 0.0
+    tn_PickA_Srv_3 := 999999999.0
+
+    // Initialize PickA_Srv_4
+    phase_PickA_Srv_4 := "passive"
+    tl_PickA_Srv_4 := 0.0
+    tn_PickA_Srv_4 := 999999999.0
+
+    // Initialize PickB
+    phase_PickB := "idle"
+    tl_PickB := 0.0
+    tn_PickB := 999999999.0
+    PickB_queue_count := 0
+    PickB_server_count := 0
+    PickB_srv_1_free := 1
+    PickB_srv_2_free := 1
+
+    // Initialize PickB_Srv_1
+    phase_PickB_Srv_1 := "passive"
+    tl_PickB_Srv_1 := 0.0
+    tn_PickB_Srv_1 := 999999999.0
+
+    // Initialize PickB_Srv_2
+    phase_PickB_Srv_2 := "passive"
+    tl_PickB_Srv_2 := 0.0
+    tn_PickB_Srv_2 := 999999999.0
+
+    // Initialize Label
+    phase_Label := "idle"
+    tl_Label := 0.0
+    tn_Label := 999999999.0
+    Label_queue_count := 0
+    Label_server_count := 0
+    Label_srv_1_free := 1
+    Label_srv_2_free := 1
+    Label_srv_3_free := 1
+
+    // Initialize Label_Srv_1
+    phase_Label_Srv_1 := "passive"
+    tl_Label_Srv_1 := 0.0
+    tn_Label_Srv_1 := 999999999.0
+
+    // Initialize Label_Srv_2
+    phase_Label_Srv_2 := "passive"
+    tl_Label_Srv_2 := 0.0
+    tn_Label_Srv_2 := 999999999.0
+
+    // Initialize Label_Srv_3
+    phase_Label_Srv_3 := "passive"
+    tl_Label_Srv_3 := 0.0
+    tn_Label_Srv_3 := 999999999.0
+
+    // Initialize Scan
+    phase_Scan := "idle"
+    tl_Scan := 0.0
+    tn_Scan := 999999999.0
+    Scan_queue_count := 0
+    Scan_server_count := 0
+    Scan_srv_1_free := 1
+
+    // Initialize Scan_Srv_1
+    phase_Scan_Srv_1 := "passive"
+    tl_Scan_Srv_1 := 0.0
+    tn_Scan_Srv_1 := 999999999.0
+
+    // Initialize Pack
+    phase_Pack := "idle"
+    tl_Pack := 0.0
+    tn_Pack := 999999999.0
+    Pack_queue_count := 0
+    Pack_server_count := 0
+    Pack_srv_1_free := 1
+    Pack_srv_2_free := 1
+    Pack_srv_3_free := 1
+
+    // Initialize Pack_Srv_1
+    phase_Pack_Srv_1 := "passive"
+    tl_Pack_Srv_1 := 0.0
+    tn_Pack_Srv_1 := 999999999.0
+
+    // Initialize Pack_Srv_2
+    phase_Pack_Srv_2 := "passive"
+    tl_Pack_Srv_2 := 0.0
+    tn_Pack_Srv_2 := 999999999.0
+
+    // Initialize Pack_Srv_3
+    phase_Pack_Srv_3 := "passive"
+    tl_Pack_Srv_3 := 0.0
+    tn_Pack_Srv_3 := 999999999.0
+
+    // Initialize Release
+    phase_Release := "idle"
+    tl_Release := 0.0
+    tn_Release := 999999999.0
+    Release_queue_count := 0
+    Release_server_count := 0
+    Release_srv_1_free := 1
+    Release_srv_2_free := 1
+
+    // Initialize Release_Srv_1
+    phase_Release_Srv_1 := "passive"
+    tl_Release_Srv_1 := 0.0
+    tn_Release_Srv_1 := 999999999.0
+
+    // Initialize Release_Srv_2
+    phase_Release_Srv_2 := "passive"
+    tl_Release_Srv_2 := 0.0
+    tn_Release_Srv_2 := 999999999.0
+
+    // Initialize Sink
+    phase_Sink := "idle"
+    tl_Sink := 0.0
+    tn_Sink := 999999999.0
+    Sink_departure_count := 0
+
+    stopping_condition := false
+
+    // Initialize event list
+    future_event_list := []
+    let evt_GenZA1 = new ComponentEvent
+    cel_component(evt_GenZA1) := "GenZA1"
+    cel_time(evt_GenZA1) := tn_GenZA1
+    lib.add(future_event_list, evt_GenZA1)
+    let evt_GenZA2 = new ComponentEvent
+    cel_component(evt_GenZA2) := "GenZA2"
+    cel_time(evt_GenZA2) := tn_GenZA2
+    lib.add(future_event_list, evt_GenZA2)
+    let evt_GenZB1 = new ComponentEvent
+    cel_component(evt_GenZB1) := "GenZB1"
+    cel_time(evt_GenZB1) := tn_GenZB1
+    lib.add(future_event_list, evt_GenZB1)
+    let evt_GenZB2 = new ComponentEvent
+    cel_component(evt_GenZB2) := "GenZB2"
+    cel_time(evt_GenZB2) := tn_GenZB2
+    lib.add(future_event_list, evt_GenZB2)
+    let evt_PickA = new ComponentEvent
+    cel_component(evt_PickA) := "PickA"
+    cel_time(evt_PickA) := tn_PickA
+    lib.add(future_event_list, evt_PickA)
+    let evt_PickA_Srv_1 = new ComponentEvent
+    cel_component(evt_PickA_Srv_1) := "PickA_Srv_1"
+    cel_time(evt_PickA_Srv_1) := tn_PickA_Srv_1
+    lib.add(future_event_list, evt_PickA_Srv_1)
+    let evt_PickA_Srv_2 = new ComponentEvent
+    cel_component(evt_PickA_Srv_2) := "PickA_Srv_2"
+    cel_time(evt_PickA_Srv_2) := tn_PickA_Srv_2
+    lib.add(future_event_list, evt_PickA_Srv_2)
+    let evt_PickA_Srv_3 = new ComponentEvent
+    cel_component(evt_PickA_Srv_3) := "PickA_Srv_3"
+    cel_time(evt_PickA_Srv_3) := tn_PickA_Srv_3
+    lib.add(future_event_list, evt_PickA_Srv_3)
+    let evt_PickA_Srv_4 = new ComponentEvent
+    cel_component(evt_PickA_Srv_4) := "PickA_Srv_4"
+    cel_time(evt_PickA_Srv_4) := tn_PickA_Srv_4
+    lib.add(future_event_list, evt_PickA_Srv_4)
+    let evt_PickB = new ComponentEvent
+    cel_component(evt_PickB) := "PickB"
+    cel_time(evt_PickB) := tn_PickB
+    lib.add(future_event_list, evt_PickB)
+    let evt_PickB_Srv_1 = new ComponentEvent
+    cel_component(evt_PickB_Srv_1) := "PickB_Srv_1"
+    cel_time(evt_PickB_Srv_1) := tn_PickB_Srv_1
+    lib.add(future_event_list, evt_PickB_Srv_1)
+    let evt_PickB_Srv_2 = new ComponentEvent
+    cel_component(evt_PickB_Srv_2) := "PickB_Srv_2"
+    cel_time(evt_PickB_Srv_2) := tn_PickB_Srv_2
+    lib.add(future_event_list, evt_PickB_Srv_2)
+    let evt_Label = new ComponentEvent
+    cel_component(evt_Label) := "Label"
+    cel_time(evt_Label) := tn_Label
+    lib.add(future_event_list, evt_Label)
+    let evt_Label_Srv_1 = new ComponentEvent
+    cel_component(evt_Label_Srv_1) := "Label_Srv_1"
+    cel_time(evt_Label_Srv_1) := tn_Label_Srv_1
+    lib.add(future_event_list, evt_Label_Srv_1)
+    let evt_Label_Srv_2 = new ComponentEvent
+    cel_component(evt_Label_Srv_2) := "Label_Srv_2"
+    cel_time(evt_Label_Srv_2) := tn_Label_Srv_2
+    lib.add(future_event_list, evt_Label_Srv_2)
+    let evt_Label_Srv_3 = new ComponentEvent
+    cel_component(evt_Label_Srv_3) := "Label_Srv_3"
+    cel_time(evt_Label_Srv_3) := tn_Label_Srv_3
+    lib.add(future_event_list, evt_Label_Srv_3)
+    let evt_Scan = new ComponentEvent
+    cel_component(evt_Scan) := "Scan"
+    cel_time(evt_Scan) := tn_Scan
+    lib.add(future_event_list, evt_Scan)
+    let evt_Scan_Srv_1 = new ComponentEvent
+    cel_component(evt_Scan_Srv_1) := "Scan_Srv_1"
+    cel_time(evt_Scan_Srv_1) := tn_Scan_Srv_1
+    lib.add(future_event_list, evt_Scan_Srv_1)
+    let evt_Pack = new ComponentEvent
+    cel_component(evt_Pack) := "Pack"
+    cel_time(evt_Pack) := tn_Pack
+    lib.add(future_event_list, evt_Pack)
+    let evt_Pack_Srv_1 = new ComponentEvent
+    cel_component(evt_Pack_Srv_1) := "Pack_Srv_1"
+    cel_time(evt_Pack_Srv_1) := tn_Pack_Srv_1
+    lib.add(future_event_list, evt_Pack_Srv_1)
+    let evt_Pack_Srv_2 = new ComponentEvent
+    cel_component(evt_Pack_Srv_2) := "Pack_Srv_2"
+    cel_time(evt_Pack_Srv_2) := tn_Pack_Srv_2
+    lib.add(future_event_list, evt_Pack_Srv_2)
+    let evt_Pack_Srv_3 = new ComponentEvent
+    cel_component(evt_Pack_Srv_3) := "Pack_Srv_3"
+    cel_time(evt_Pack_Srv_3) := tn_Pack_Srv_3
+    lib.add(future_event_list, evt_Pack_Srv_3)
+    let evt_Release = new ComponentEvent
+    cel_component(evt_Release) := "Release"
+    cel_time(evt_Release) := tn_Release
+    lib.add(future_event_list, evt_Release)
+    let evt_Release_Srv_1 = new ComponentEvent
+    cel_component(evt_Release_Srv_1) := "Release_Srv_1"
+    cel_time(evt_Release_Srv_1) := tn_Release_Srv_1
+    lib.add(future_event_list, evt_Release_Srv_1)
+    let evt_Release_Srv_2 = new ComponentEvent
+    cel_component(evt_Release_Srv_2) := "Release_Srv_2"
+    cel_time(evt_Release_Srv_2) := tn_Release_Srv_2
+    lib.add(future_event_list, evt_Release_Srv_2)
+    let evt_Sink = new ComponentEvent
+    cel_component(evt_Sink) := "Sink"
+    cel_time(evt_Sink) := tn_Sink
+    lib.add(future_event_list, evt_Sink)
+endrule
+
+// One macro-step of the Abstract Simulator
+rule simulator_step() =
+    // Phase 1: Select imminent and advance time (sort FEL, pop earliest)
+    select_imminent()
+
+    // Phase 2: Output function (lambda) then internal transition (delta_int)
+    output_value := ""
+    if imminent_component == "GenZA1" then
+        output_function_GenZA1()
+        internal_transition_GenZA1()
+    elseif imminent_component == "GenZA2" then
+        output_function_GenZA2()
+        internal_transition_GenZA2()
+    elseif imminent_component == "GenZB1" then
+        output_function_GenZB1()
+        internal_transition_GenZB1()
+    elseif imminent_component == "GenZB2" then
+        output_function_GenZB2()
+        internal_transition_GenZB2()
+    elseif imminent_component == "PickA" then
+        output_function_PickA()
+        internal_transition_PickA()
+    elseif imminent_component == "PickA_Srv_1" then
+        output_function_PickA_Srv_1()
+        internal_transition_PickA_Srv_1()
+    elseif imminent_component == "PickA_Srv_2" then
+        output_function_PickA_Srv_2()
+        internal_transition_PickA_Srv_2()
+    elseif imminent_component == "PickA_Srv_3" then
+        output_function_PickA_Srv_3()
+        internal_transition_PickA_Srv_3()
+    elseif imminent_component == "PickA_Srv_4" then
+        output_function_PickA_Srv_4()
+        internal_transition_PickA_Srv_4()
+    elseif imminent_component == "PickB" then
+        output_function_PickB()
+        internal_transition_PickB()
+    elseif imminent_component == "PickB_Srv_1" then
+        output_function_PickB_Srv_1()
+        internal_transition_PickB_Srv_1()
+    elseif imminent_component == "PickB_Srv_2" then
+        output_function_PickB_Srv_2()
+        internal_transition_PickB_Srv_2()
+    elseif imminent_component == "Label" then
+        output_function_Label()
+        internal_transition_Label()
+    elseif imminent_component == "Label_Srv_1" then
+        output_function_Label_Srv_1()
+        internal_transition_Label_Srv_1()
+    elseif imminent_component == "Label_Srv_2" then
+        output_function_Label_Srv_2()
+        internal_transition_Label_Srv_2()
+    elseif imminent_component == "Label_Srv_3" then
+        output_function_Label_Srv_3()
+        internal_transition_Label_Srv_3()
+    elseif imminent_component == "Scan" then
+        output_function_Scan()
+        internal_transition_Scan()
+    elseif imminent_component == "Scan_Srv_1" then
+        output_function_Scan_Srv_1()
+        internal_transition_Scan_Srv_1()
+    elseif imminent_component == "Pack" then
+        output_function_Pack()
+        internal_transition_Pack()
+    elseif imminent_component == "Pack_Srv_1" then
+        output_function_Pack_Srv_1()
+        internal_transition_Pack_Srv_1()
+    elseif imminent_component == "Pack_Srv_2" then
+        output_function_Pack_Srv_2()
+        internal_transition_Pack_Srv_2()
+    elseif imminent_component == "Pack_Srv_3" then
+        output_function_Pack_Srv_3()
+        internal_transition_Pack_Srv_3()
+    elseif imminent_component == "Release" then
+        output_function_Release()
+        internal_transition_Release()
+    elseif imminent_component == "Release_Srv_1" then
+        output_function_Release_Srv_1()
+        internal_transition_Release_Srv_1()
+    elseif imminent_component == "Release_Srv_2" then
+        output_function_Release_Srv_2()
+        internal_transition_Release_Srv_2()
+    elseif imminent_component == "Sink" then
+        output_function_Sink()
+        internal_transition_Sink()
+    endif
+
+    // Phase 3: Route output to receivers (only if lambda produced output)
+    if output_value != "" then
+        route_output()
+    endif
+
+    // Phase 4: Rebuild event list with updated tn values
+    update_event_list()
+
+    // Phase 5: Check stopping condition
+    if sim_clocktime >= sim_end_time then
+        stopping_condition := true
+    endif
+endrule
+
+// ============================================================
+// Initialization Block
+// ============================================================
+
+init:
+    Q1_max := 30
+    Q2_max := 20
+    Q3_max := 50
+    Q4_max := 20
+    Q5_max := 30
+    Q6_max := 20
+    S1_capacity := 4
+    S2_capacity := 2
+    S3_capacity := 3
+    S4_capacity := 1
+    S5_capacity := 3
+    S6_capacity := 2
+    iat_c1_mean := 325.5
+    iat_c2_mean := 527.6
+    iat_c3_mean := 226.1
+    iat_c4_mean := 985.6
+    ist_s1_mean := 78.4
+    ist_s2_mean := 76.2
+    ist_s3_mean := 288.8
+    ist_s4_mean := 31.2
+    ist_s5_mean := 66.8
+    ist_s6_mean := 1.0
+    sim_end_time := 10000.0
+
+    future_event_list := []
+    initialisation_routine()
+endinit
+
+// ============================================================
+// Main Rule
+// ============================================================
+
+main rule main =
+    if not stopping_condition then
+        simulator_step()
+    else
+        skip
+    endif
+endrule

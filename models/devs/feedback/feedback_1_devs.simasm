@@ -1,0 +1,441 @@
+// SimASM: feedback_1_devs
+// Feedback 1-Queue using DEVS formalism - 1 station in series with probabilistic feedback from station 1 to station 1
+// Generated from DEVS specification
+// Date: 2026-03-06 21:47:45
+// Formalism: Discrete Event System Specification (DEVS)
+// Algorithm: Abstract Simulator (Zeigler et al. 2019)
+
+// ============================================================
+// Imports
+// ============================================================
+
+import Random as rnd
+import Stdlib as lib
+
+// ============================================================
+// Domains
+// ============================================================
+
+// Components: Generator, Server_1, Router, Sink
+domain Component
+
+// Phases: active
+domain Phase_Generator
+// Phases: passive, starting, busy
+domain Phase_Server_1
+// Phases: idle, routing
+domain Phase_Router
+// Phases: idle
+domain Phase_Sink
+
+domain Object
+domain Load <: Object
+
+// Coordinator event type
+domain ComponentEvent
+
+// Multi-server finish time tracking
+domain FinishTime
+
+// ============================================================
+// Constants
+// ============================================================
+
+const service_capacity: Nat
+const iat_mean: Real
+const ist_mean: Real
+const feedback_prob: Real
+const sim_end_time: Real
+
+// ============================================================
+// State Variables
+// ============================================================
+
+// Simulation clock
+var sim_clocktime: Real
+
+// Per-component phase
+var phase_Generator: String
+var phase_Server_1: String
+var phase_Router: String
+var phase_Sink: String
+
+// Per-component timing
+var tl_Generator: Real
+var tn_Generator: Real
+var tl_Server_1: Real
+var tn_Server_1: Real
+var tl_Router: Real
+var tn_Router: Real
+var tl_Sink: Real
+var tn_Sink: Real
+
+// Per-component state variables
+var Generator_job_count: Nat
+var Server_1_queue_count: Nat
+var Server_1_server_count: Nat
+var Server_1_finish_list: List<FinishTime>
+var Router_route_decision: Real
+var Sink_departure_count: Nat
+
+// Event list (coordinator)
+var future_event_list: List<ComponentEvent>
+
+// Coordinator auxiliary variables
+var imminent_component: String
+var output_value: String
+var current_input_port: String
+var stopping_condition: Boolean
+
+// ============================================================
+// Random Streams
+// ============================================================
+
+var interarrival_time: rnd.exponential(iat_mean) as "arrivals"
+var service_time_1: rnd.exponential(ist_mean) as "service_1"
+var feedback_rng: rnd.uniform(0.0, 1.0) as "feedback"
+
+// ============================================================
+// Observables
+// ============================================================
+
+derived function queue_count_1(): Real = Server_1_queue_count
+derived function server_count_1(): Real = Server_1_server_count
+derived function in_system(): Real = Server_1_queue_count + Server_1_server_count
+derived function L_q_total(): Real = Server_1_queue_count
+derived function departure_count(): Real = Sink_departure_count
+
+// ============================================================
+// Dynamic Function Declarations
+// ============================================================
+
+// Event list entry properties
+dynamic function cel_component(e: ComponentEvent): Component
+dynamic function cel_time(e: ComponentEvent): Real
+dynamic function ft_time(e: FinishTime): Real
+
+// ============================================================
+// Component Rules (Atomic Model Transitions)
+// ============================================================
+
+// Internal transition: delta_int for Generator
+rule internal_transition_Generator() =
+    if phase_Generator == "active" then
+        phase_Generator := "active"
+        Generator_job_count := Generator_job_count + 1
+    endif
+
+    // Update timing
+    tl_Generator := sim_clocktime
+    tn_Generator := sim_clocktime + interarrival_time
+endrule
+
+// External transition: delta_ext for Generator
+rule external_transition_Generator() =
+    skip
+endrule
+
+// Output function: lambda for Generator
+rule output_function_Generator() =
+    if phase_Generator == "active" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_1 (multi-server c=5)
+rule internal_transition_Server_1() =
+    if phase_Server_1 == "starting" then
+        phase_Server_1 := "busy"
+        Server_1_queue_count := Server_1_queue_count - 1
+        Server_1_server_count := Server_1_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_1
+        lib.add(Server_1_finish_list, new_finish)
+        if Server_1_queue_count > 0 and Server_1_server_count < service_capacity then
+            phase_Server_1 := "starting"
+        endif
+    elseif phase_Server_1 == "busy" then
+        lib.sort(Server_1_finish_list, "ft_time")
+        let finished = lib.pop(Server_1_finish_list)
+        Server_1_server_count := Server_1_server_count - 1
+        if Server_1_queue_count > 0 then
+            phase_Server_1 := "starting"
+        elseif Server_1_server_count == 0 then
+            phase_Server_1 := "passive"
+        endif
+    endif
+
+    tl_Server_1 := sim_clocktime
+    if phase_Server_1 == "passive" then
+        tn_Server_1 := sim_clocktime + 999999999.0
+    elseif phase_Server_1 == "starting" then
+        tn_Server_1 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_1_finish_list, "ft_time")
+        let earliest = lib.get(Server_1_finish_list, 0)
+        tn_Server_1 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_1 (multi-server c=5)
+rule external_transition_Server_1() =
+    Server_1_queue_count := Server_1_queue_count + 1
+    if phase_Server_1 == "passive" then
+        phase_Server_1 := "starting"
+        tl_Server_1 := sim_clocktime
+        tn_Server_1 := sim_clocktime + 0.0
+    elseif phase_Server_1 == "starting" then
+        skip
+    elseif phase_Server_1 == "busy" and Server_1_server_count < service_capacity then
+        phase_Server_1 := "starting"
+        tl_Server_1 := sim_clocktime
+        tn_Server_1 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_1
+rule output_function_Server_1() =
+    if phase_Server_1 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Router
+rule internal_transition_Router() =
+    if phase_Router == "routing" then
+        phase_Router := "idle"
+    endif
+
+    // Update timing
+    tl_Router := sim_clocktime
+    if phase_Router == "idle" then
+        tn_Router := sim_clocktime + 999999999.0
+    else
+        tn_Router := sim_clocktime + 0.0
+    endif
+endrule
+
+// External transition: delta_ext for Router
+rule external_transition_Router() =
+    if phase_Router == "idle" then
+        phase_Router := "routing"
+        Router_route_decision := feedback_rng
+        tl_Router := sim_clocktime
+        tn_Router := sim_clocktime + 0.0
+    elseif phase_Router == "routing" then
+        phase_Router := "routing"
+        Router_route_decision := feedback_rng
+    endif
+endrule
+
+// Output function: lambda for Router
+rule output_function_Router() =
+    if phase_Router == "routing" and Router_route_decision < feedback_prob then
+        output_value := "feedback"
+    elseif phase_Router == "routing" and Router_route_decision >= feedback_prob then
+        output_value := "depart"
+    endif
+endrule
+
+// Internal transition: delta_int for Sink
+rule internal_transition_Sink() =
+    skip
+endrule
+
+// External transition: delta_ext for Sink
+rule external_transition_Sink() =
+    if phase_Sink == "idle" then
+        phase_Sink := "idle"
+        Sink_departure_count := Sink_departure_count + 1
+    endif
+endrule
+
+// Output function: lambda for Sink
+rule output_function_Sink() =
+    skip
+endrule
+
+
+// ============================================================
+// Coordinator Rules
+// ============================================================
+
+// Select imminent component: sort event list, pop earliest (tie-break by Select priority)
+rule select_imminent() =
+    // Sort event list by scheduled time (stable sort preserves Select priority)
+    lib.sort(future_event_list, "cel_time")
+
+    // Pop imminent (earliest) event
+    let imminent_event = lib.pop(future_event_list)
+    imminent_component := cel_component(imminent_event)
+
+    // Advance clock to event time
+    sim_clocktime := cel_time(imminent_event)
+endrule
+
+// Route output from imminent component to influenced receivers
+rule route_output() =
+    if imminent_component == "Generator" then
+        // Route: Generator.out -> Server_1.in
+        current_input_port := "in"
+        external_transition_Server_1()
+    elseif imminent_component == "Server_1" then
+        // Route: Server_1.out -> Router.in
+        current_input_port := "in"
+        external_transition_Router()
+    elseif imminent_component == "Router" then
+        if output_value == "feedback" then
+            // Route: Router.feedback -> Server_1.in
+            current_input_port := "in"
+            external_transition_Server_1()
+        elseif output_value == "depart" then
+            // Route: Router.depart -> Sink.in
+            current_input_port := "in"
+            external_transition_Sink()
+        endif
+    endif
+endrule
+
+// Rebuild event list from current tn values (Select priority order for tie-breaking)
+rule update_event_list() =
+    future_event_list := []
+
+    let evt_Generator = new ComponentEvent
+    cel_component(evt_Generator) := "Generator"
+    cel_time(evt_Generator) := tn_Generator
+    lib.add(future_event_list, evt_Generator)
+
+    let evt_Server_1 = new ComponentEvent
+    cel_component(evt_Server_1) := "Server_1"
+    cel_time(evt_Server_1) := tn_Server_1
+    lib.add(future_event_list, evt_Server_1)
+
+    let evt_Router = new ComponentEvent
+    cel_component(evt_Router) := "Router"
+    cel_time(evt_Router) := tn_Router
+    lib.add(future_event_list, evt_Router)
+
+    let evt_Sink = new ComponentEvent
+    cel_component(evt_Sink) := "Sink"
+    cel_time(evt_Sink) := tn_Sink
+    lib.add(future_event_list, evt_Sink)
+
+endrule
+
+// ============================================================
+// Abstract Simulator Algorithm
+// ============================================================
+
+// Initialization: send (i, t0) to all component simulators
+rule initialisation_routine() =
+    sim_clocktime := 0.0
+
+    // Initialize Generator
+    phase_Generator := "active"
+    tl_Generator := 0.0
+    tn_Generator := interarrival_time
+    Generator_job_count := 0
+
+    // Initialize Server_1
+    phase_Server_1 := "passive"
+    tl_Server_1 := 0.0
+    tn_Server_1 := 999999999.0
+    Server_1_queue_count := 0
+    Server_1_server_count := 0
+    Server_1_finish_list := []
+
+    // Initialize Router
+    phase_Router := "idle"
+    tl_Router := 0.0
+    tn_Router := 999999999.0
+    Router_route_decision := 0.0
+
+    // Initialize Sink
+    phase_Sink := "idle"
+    tl_Sink := 0.0
+    tn_Sink := 999999999.0
+    Sink_departure_count := 0
+
+    stopping_condition := false
+
+    // Initialize event list
+    future_event_list := []
+    let evt_Generator = new ComponentEvent
+    cel_component(evt_Generator) := "Generator"
+    cel_time(evt_Generator) := tn_Generator
+    lib.add(future_event_list, evt_Generator)
+    let evt_Server_1 = new ComponentEvent
+    cel_component(evt_Server_1) := "Server_1"
+    cel_time(evt_Server_1) := tn_Server_1
+    lib.add(future_event_list, evt_Server_1)
+    let evt_Router = new ComponentEvent
+    cel_component(evt_Router) := "Router"
+    cel_time(evt_Router) := tn_Router
+    lib.add(future_event_list, evt_Router)
+    let evt_Sink = new ComponentEvent
+    cel_component(evt_Sink) := "Sink"
+    cel_time(evt_Sink) := tn_Sink
+    lib.add(future_event_list, evt_Sink)
+endrule
+
+// One macro-step of the Abstract Simulator
+rule simulator_step() =
+    // Phase 1: Select imminent and advance time (sort FEL, pop earliest)
+    select_imminent()
+
+    // Phase 2: Output function (lambda) then internal transition (delta_int)
+    output_value := ""
+    if imminent_component == "Generator" then
+        output_function_Generator()
+        internal_transition_Generator()
+    elseif imminent_component == "Server_1" then
+        output_function_Server_1()
+        internal_transition_Server_1()
+    elseif imminent_component == "Router" then
+        output_function_Router()
+        internal_transition_Router()
+    elseif imminent_component == "Sink" then
+        output_function_Sink()
+        internal_transition_Sink()
+    endif
+
+    // Phase 3: Route output to receivers (only if lambda produced output)
+    if output_value != "" then
+        route_output()
+    endif
+
+    // Phase 4: Rebuild event list with updated tn values
+    update_event_list()
+
+    // Phase 5: Check stopping condition
+    if sim_clocktime >= sim_end_time then
+        stopping_condition := true
+    endif
+endrule
+
+// ============================================================
+// Initialization Block
+// ============================================================
+
+init:
+    service_capacity := 5
+    iat_mean := 1.25
+    ist_mean := 1.0
+    feedback_prob := 0.5
+    sim_end_time := 10000.0
+
+    future_event_list := []
+    initialisation_routine()
+endinit
+
+// ============================================================
+// Main Rule
+// ============================================================
+
+main rule main =
+    if not stopping_condition then
+        simulator_step()
+    else
+        skip
+    endif
+endrule

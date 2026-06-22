@@ -1,0 +1,646 @@
+{
+  "verification": "hybrid_3_4_eg_devs_msre",
+  "check_type": "macro_step_refinement",
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71
+  ],
+  "num_seeds": 30,
+  "target_seeds": 30,
+  "run_length": 500.0,
+  "equivalent_count": 30,
+  "failed_seeds": [],
+  "is_equivalent": true,
+  "complete": true,
+  "status": "EQUIVALENT",
+  "per_seed_results": [
+    {
+      "seed": 42,
+      "is_equivalent": true,
+      "boundaries_checked": 5889,
+      "total_steps_a": 16084,
+      "total_steps_b": 16866,
+      "step_profile_summary": {
+        "m_mean": 2.731193751061301,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.8639836984207845,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 43,
+      "is_equivalent": true,
+      "boundaries_checked": 5998,
+      "total_steps_a": 16397,
+      "total_steps_b": 17195,
+      "step_profile_summary": {
+        "m_mean": 2.733744581527176,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.8667889296432145,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 44,
+      "is_equivalent": true,
+      "boundaries_checked": 6335,
+      "total_steps_a": 17341,
+      "total_steps_b": 18185,
+      "step_profile_summary": {
+        "m_mean": 2.73733228097869,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.8705603788476717,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 45,
+      "is_equivalent": true,
+      "boundaries_checked": 6281,
+      "total_steps_a": 17207,
+      "total_steps_b": 18045,
+      "step_profile_summary": {
+        "m_mean": 2.739531921668524,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.8729501671708326,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 46,
+      "is_equivalent": true,
+      "boundaries_checked": 5898,
+      "total_steps_a": 16094,
+      "total_steps_b": 16877,
+      "step_profile_summary": {
+        "m_mean": 2.7287216005425567,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.8614784672770432,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 47,
+      "is_equivalent": true,
+      "boundaries_checked": 6138,
+      "total_steps_a": 16744,
+      "total_steps_b": 17558,
+      "step_profile_summary": {
+        "m_mean": 2.72792440534376,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.8605408927989573,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 48,
+      "is_equivalent": true,
+      "boundaries_checked": 5724,
+      "total_steps_a": 15634,
+      "total_steps_b": 16396,
+      "step_profile_summary": {
+        "m_mean": 2.73130677847659,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.864430468204053,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 49,
+      "is_equivalent": true,
+      "boundaries_checked": 6092,
+      "total_steps_a": 16633,
+      "total_steps_b": 17441,
+      "step_profile_summary": {
+        "m_mean": 2.730302035456336,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.862934996717006,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 50,
+      "is_equivalent": true,
+      "boundaries_checked": 6011,
+      "total_steps_a": 16426,
+      "total_steps_b": 17225,
+      "step_profile_summary": {
+        "m_mean": 2.7326567958742305,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.865579770420895,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 51,
+      "is_equivalent": true,
+      "boundaries_checked": 6094,
+      "total_steps_a": 16642,
+      "total_steps_b": 17449,
+      "step_profile_summary": {
+        "m_mean": 2.730882835575976,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.863308171972432,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 52,
+      "is_equivalent": true,
+      "boundaries_checked": 6120,
+      "total_steps_a": 16746,
+      "total_steps_b": 17561,
+      "step_profile_summary": {
+        "m_mean": 2.7362745098039216,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.8694444444444445,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 53,
+      "is_equivalent": true,
+      "boundaries_checked": 5739,
+      "total_steps_a": 15639,
+      "total_steps_b": 16398,
+      "step_profile_summary": {
+        "m_mean": 2.725039205436487,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.8572922111866177,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 54,
+      "is_equivalent": true,
+      "boundaries_checked": 5804,
+      "total_steps_a": 15868,
+      "total_steps_b": 16638,
+      "step_profile_summary": {
+        "m_mean": 2.7339765678842176,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.866643694004135,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 55,
+      "is_equivalent": true,
+      "boundaries_checked": 5984,
+      "total_steps_a": 16344,
+      "total_steps_b": 17139,
+      "step_profile_summary": {
+        "m_mean": 2.731283422459893,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.8641377005347595,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 56,
+      "is_equivalent": true,
+      "boundaries_checked": 5502,
+      "total_steps_a": 15054,
+      "total_steps_b": 15787,
+      "step_profile_summary": {
+        "m_mean": 2.7360959651035985,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.8693202471828427,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 57,
+      "is_equivalent": true,
+      "boundaries_checked": 6008,
+      "total_steps_a": 16396,
+      "total_steps_b": 17192,
+      "step_profile_summary": {
+        "m_mean": 2.729027962716378,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.8615179760319576,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 58,
+      "is_equivalent": true,
+      "boundaries_checked": 5590,
+      "total_steps_a": 15287,
+      "total_steps_b": 16031,
+      "step_profile_summary": {
+        "m_mean": 2.7347048300536674,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.867799642218247,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 59,
+      "is_equivalent": true,
+      "boundaries_checked": 6096,
+      "total_steps_a": 16662,
+      "total_steps_b": 17472,
+      "step_profile_summary": {
+        "m_mean": 2.733267716535433,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.8661417322834644,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 60,
+      "is_equivalent": true,
+      "boundaries_checked": 5781,
+      "total_steps_a": 15799,
+      "total_steps_b": 16568,
+      "step_profile_summary": {
+        "m_mean": 2.7329181802456324,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.86594014876319,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 61,
+      "is_equivalent": true,
+      "boundaries_checked": 5768,
+      "total_steps_a": 15754,
+      "total_steps_b": 16519,
+      "step_profile_summary": {
+        "m_mean": 2.73127600554785,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.8639042995839112,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 62,
+      "is_equivalent": true,
+      "boundaries_checked": 6061,
+      "total_steps_a": 16566,
+      "total_steps_b": 17370,
+      "step_profile_summary": {
+        "m_mean": 2.733212341197822,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.8658637188582743,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 63,
+      "is_equivalent": true,
+      "boundaries_checked": 6343,
+      "total_steps_a": 17335,
+      "total_steps_b": 18178,
+      "step_profile_summary": {
+        "m_mean": 2.7329339429292134,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.865836355037049,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 64,
+      "is_equivalent": true,
+      "boundaries_checked": 6162,
+      "total_steps_a": 16880,
+      "total_steps_b": 17702,
+      "step_profile_summary": {
+        "m_mean": 2.739370334307043,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.8727685816293413,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 65,
+      "is_equivalent": true,
+      "boundaries_checked": 5914,
+      "total_steps_a": 16169,
+      "total_steps_b": 16954,
+      "step_profile_summary": {
+        "m_mean": 2.734020967196483,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.866756848156916,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 66,
+      "is_equivalent": true,
+      "boundaries_checked": 5397,
+      "total_steps_a": 14736,
+      "total_steps_b": 15453,
+      "step_profile_summary": {
+        "m_mean": 2.7304057809894386,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.8632573652028905,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 67,
+      "is_equivalent": true,
+      "boundaries_checked": 5725,
+      "total_steps_a": 15629,
+      "total_steps_b": 16389,
+      "step_profile_summary": {
+        "m_mean": 2.7299563318777293,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.862707423580786,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 68,
+      "is_equivalent": true,
+      "boundaries_checked": 5577,
+      "total_steps_a": 15239,
+      "total_steps_b": 15981,
+      "step_profile_summary": {
+        "m_mean": 2.7324726555495786,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.865519096288327,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 69,
+      "is_equivalent": true,
+      "boundaries_checked": 5818,
+      "total_steps_a": 15854,
+      "total_steps_b": 16623,
+      "step_profile_summary": {
+        "m_mean": 2.724991405981437,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.857167411481609,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 70,
+      "is_equivalent": true,
+      "boundaries_checked": 5863,
+      "total_steps_a": 16027,
+      "total_steps_b": 16807,
+      "step_profile_summary": {
+        "m_mean": 2.7335834896810507,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.8666211836943543,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    },
+    {
+      "seed": 71,
+      "is_equivalent": true,
+      "boundaries_checked": 6072,
+      "total_steps_a": 16555,
+      "total_steps_b": 17359,
+      "step_profile_summary": {
+        "m_mean": 2.726449275362319,
+        "m_range": [
+          1,
+          7
+        ],
+        "n_mean": 2.8588603425559946,
+        "n_range": [
+          1,
+          7
+        ]
+      },
+      "failure": null
+    }
+  ]
+}

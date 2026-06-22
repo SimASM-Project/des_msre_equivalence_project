@@ -1,0 +1,2208 @@
+// SimASM: feedback_20_devs
+// Feedback 20-Queue using DEVS formalism - 20 stations in series with probabilistic feedback from station 20 to station 1
+// Generated from DEVS specification
+// Date: 2026-03-06 21:47:45
+// Formalism: Discrete Event System Specification (DEVS)
+// Algorithm: Abstract Simulator (Zeigler et al. 2019)
+
+// ============================================================
+// Imports
+// ============================================================
+
+import Random as rnd
+import Stdlib as lib
+
+// ============================================================
+// Domains
+// ============================================================
+
+// Components: Generator, Server_1, Server_2, Server_3, Server_4, Server_5, Server_6, Server_7, Server_8, Server_9, Server_10, Server_11, Server_12, Server_13, Server_14, Server_15, Server_16, Server_17, Server_18, Server_19, Server_20, Router, Sink
+domain Component
+
+// Phases: active
+domain Phase_Generator
+// Phases: passive, starting, busy
+domain Phase_Server_1
+// Phases: passive, starting, busy
+domain Phase_Server_2
+// Phases: passive, starting, busy
+domain Phase_Server_3
+// Phases: passive, starting, busy
+domain Phase_Server_4
+// Phases: passive, starting, busy
+domain Phase_Server_5
+// Phases: passive, starting, busy
+domain Phase_Server_6
+// Phases: passive, starting, busy
+domain Phase_Server_7
+// Phases: passive, starting, busy
+domain Phase_Server_8
+// Phases: passive, starting, busy
+domain Phase_Server_9
+// Phases: passive, starting, busy
+domain Phase_Server_10
+// Phases: passive, starting, busy
+domain Phase_Server_11
+// Phases: passive, starting, busy
+domain Phase_Server_12
+// Phases: passive, starting, busy
+domain Phase_Server_13
+// Phases: passive, starting, busy
+domain Phase_Server_14
+// Phases: passive, starting, busy
+domain Phase_Server_15
+// Phases: passive, starting, busy
+domain Phase_Server_16
+// Phases: passive, starting, busy
+domain Phase_Server_17
+// Phases: passive, starting, busy
+domain Phase_Server_18
+// Phases: passive, starting, busy
+domain Phase_Server_19
+// Phases: passive, starting, busy
+domain Phase_Server_20
+// Phases: idle, routing
+domain Phase_Router
+// Phases: idle
+domain Phase_Sink
+
+domain Object
+domain Load <: Object
+
+// Coordinator event type
+domain ComponentEvent
+
+// Multi-server finish time tracking
+domain FinishTime
+
+// ============================================================
+// Constants
+// ============================================================
+
+const service_capacity: Nat
+const iat_mean: Real
+const ist_mean: Real
+const feedback_prob: Real
+const sim_end_time: Real
+
+// ============================================================
+// State Variables
+// ============================================================
+
+// Simulation clock
+var sim_clocktime: Real
+
+// Per-component phase
+var phase_Generator: String
+var phase_Server_1: String
+var phase_Server_2: String
+var phase_Server_3: String
+var phase_Server_4: String
+var phase_Server_5: String
+var phase_Server_6: String
+var phase_Server_7: String
+var phase_Server_8: String
+var phase_Server_9: String
+var phase_Server_10: String
+var phase_Server_11: String
+var phase_Server_12: String
+var phase_Server_13: String
+var phase_Server_14: String
+var phase_Server_15: String
+var phase_Server_16: String
+var phase_Server_17: String
+var phase_Server_18: String
+var phase_Server_19: String
+var phase_Server_20: String
+var phase_Router: String
+var phase_Sink: String
+
+// Per-component timing
+var tl_Generator: Real
+var tn_Generator: Real
+var tl_Server_1: Real
+var tn_Server_1: Real
+var tl_Server_2: Real
+var tn_Server_2: Real
+var tl_Server_3: Real
+var tn_Server_3: Real
+var tl_Server_4: Real
+var tn_Server_4: Real
+var tl_Server_5: Real
+var tn_Server_5: Real
+var tl_Server_6: Real
+var tn_Server_6: Real
+var tl_Server_7: Real
+var tn_Server_7: Real
+var tl_Server_8: Real
+var tn_Server_8: Real
+var tl_Server_9: Real
+var tn_Server_9: Real
+var tl_Server_10: Real
+var tn_Server_10: Real
+var tl_Server_11: Real
+var tn_Server_11: Real
+var tl_Server_12: Real
+var tn_Server_12: Real
+var tl_Server_13: Real
+var tn_Server_13: Real
+var tl_Server_14: Real
+var tn_Server_14: Real
+var tl_Server_15: Real
+var tn_Server_15: Real
+var tl_Server_16: Real
+var tn_Server_16: Real
+var tl_Server_17: Real
+var tn_Server_17: Real
+var tl_Server_18: Real
+var tn_Server_18: Real
+var tl_Server_19: Real
+var tn_Server_19: Real
+var tl_Server_20: Real
+var tn_Server_20: Real
+var tl_Router: Real
+var tn_Router: Real
+var tl_Sink: Real
+var tn_Sink: Real
+
+// Per-component state variables
+var Generator_job_count: Nat
+var Server_1_queue_count: Nat
+var Server_1_server_count: Nat
+var Server_1_finish_list: List<FinishTime>
+var Server_2_queue_count: Nat
+var Server_2_server_count: Nat
+var Server_2_finish_list: List<FinishTime>
+var Server_3_queue_count: Nat
+var Server_3_server_count: Nat
+var Server_3_finish_list: List<FinishTime>
+var Server_4_queue_count: Nat
+var Server_4_server_count: Nat
+var Server_4_finish_list: List<FinishTime>
+var Server_5_queue_count: Nat
+var Server_5_server_count: Nat
+var Server_5_finish_list: List<FinishTime>
+var Server_6_queue_count: Nat
+var Server_6_server_count: Nat
+var Server_6_finish_list: List<FinishTime>
+var Server_7_queue_count: Nat
+var Server_7_server_count: Nat
+var Server_7_finish_list: List<FinishTime>
+var Server_8_queue_count: Nat
+var Server_8_server_count: Nat
+var Server_8_finish_list: List<FinishTime>
+var Server_9_queue_count: Nat
+var Server_9_server_count: Nat
+var Server_9_finish_list: List<FinishTime>
+var Server_10_queue_count: Nat
+var Server_10_server_count: Nat
+var Server_10_finish_list: List<FinishTime>
+var Server_11_queue_count: Nat
+var Server_11_server_count: Nat
+var Server_11_finish_list: List<FinishTime>
+var Server_12_queue_count: Nat
+var Server_12_server_count: Nat
+var Server_12_finish_list: List<FinishTime>
+var Server_13_queue_count: Nat
+var Server_13_server_count: Nat
+var Server_13_finish_list: List<FinishTime>
+var Server_14_queue_count: Nat
+var Server_14_server_count: Nat
+var Server_14_finish_list: List<FinishTime>
+var Server_15_queue_count: Nat
+var Server_15_server_count: Nat
+var Server_15_finish_list: List<FinishTime>
+var Server_16_queue_count: Nat
+var Server_16_server_count: Nat
+var Server_16_finish_list: List<FinishTime>
+var Server_17_queue_count: Nat
+var Server_17_server_count: Nat
+var Server_17_finish_list: List<FinishTime>
+var Server_18_queue_count: Nat
+var Server_18_server_count: Nat
+var Server_18_finish_list: List<FinishTime>
+var Server_19_queue_count: Nat
+var Server_19_server_count: Nat
+var Server_19_finish_list: List<FinishTime>
+var Server_20_queue_count: Nat
+var Server_20_server_count: Nat
+var Server_20_finish_list: List<FinishTime>
+var Router_route_decision: Real
+var Sink_departure_count: Nat
+
+// Event list (coordinator)
+var future_event_list: List<ComponentEvent>
+
+// Coordinator auxiliary variables
+var imminent_component: String
+var output_value: String
+var current_input_port: String
+var stopping_condition: Boolean
+
+// ============================================================
+// Random Streams
+// ============================================================
+
+var interarrival_time: rnd.exponential(iat_mean) as "arrivals"
+var service_time_1: rnd.exponential(ist_mean) as "service_1"
+var service_time_2: rnd.exponential(ist_mean) as "service_2"
+var service_time_3: rnd.exponential(ist_mean) as "service_3"
+var service_time_4: rnd.exponential(ist_mean) as "service_4"
+var service_time_5: rnd.exponential(ist_mean) as "service_5"
+var service_time_6: rnd.exponential(ist_mean) as "service_6"
+var service_time_7: rnd.exponential(ist_mean) as "service_7"
+var service_time_8: rnd.exponential(ist_mean) as "service_8"
+var service_time_9: rnd.exponential(ist_mean) as "service_9"
+var service_time_10: rnd.exponential(ist_mean) as "service_10"
+var service_time_11: rnd.exponential(ist_mean) as "service_11"
+var service_time_12: rnd.exponential(ist_mean) as "service_12"
+var service_time_13: rnd.exponential(ist_mean) as "service_13"
+var service_time_14: rnd.exponential(ist_mean) as "service_14"
+var service_time_15: rnd.exponential(ist_mean) as "service_15"
+var service_time_16: rnd.exponential(ist_mean) as "service_16"
+var service_time_17: rnd.exponential(ist_mean) as "service_17"
+var service_time_18: rnd.exponential(ist_mean) as "service_18"
+var service_time_19: rnd.exponential(ist_mean) as "service_19"
+var service_time_20: rnd.exponential(ist_mean) as "service_20"
+var feedback_rng: rnd.uniform(0.0, 1.0) as "feedback"
+
+// ============================================================
+// Observables
+// ============================================================
+
+derived function queue_count_1(): Real = Server_1_queue_count
+derived function server_count_1(): Real = Server_1_server_count
+derived function queue_count_2(): Real = Server_2_queue_count
+derived function server_count_2(): Real = Server_2_server_count
+derived function queue_count_3(): Real = Server_3_queue_count
+derived function server_count_3(): Real = Server_3_server_count
+derived function queue_count_4(): Real = Server_4_queue_count
+derived function server_count_4(): Real = Server_4_server_count
+derived function queue_count_5(): Real = Server_5_queue_count
+derived function server_count_5(): Real = Server_5_server_count
+derived function queue_count_6(): Real = Server_6_queue_count
+derived function server_count_6(): Real = Server_6_server_count
+derived function queue_count_7(): Real = Server_7_queue_count
+derived function server_count_7(): Real = Server_7_server_count
+derived function queue_count_8(): Real = Server_8_queue_count
+derived function server_count_8(): Real = Server_8_server_count
+derived function queue_count_9(): Real = Server_9_queue_count
+derived function server_count_9(): Real = Server_9_server_count
+derived function queue_count_10(): Real = Server_10_queue_count
+derived function server_count_10(): Real = Server_10_server_count
+derived function queue_count_11(): Real = Server_11_queue_count
+derived function server_count_11(): Real = Server_11_server_count
+derived function queue_count_12(): Real = Server_12_queue_count
+derived function server_count_12(): Real = Server_12_server_count
+derived function queue_count_13(): Real = Server_13_queue_count
+derived function server_count_13(): Real = Server_13_server_count
+derived function queue_count_14(): Real = Server_14_queue_count
+derived function server_count_14(): Real = Server_14_server_count
+derived function queue_count_15(): Real = Server_15_queue_count
+derived function server_count_15(): Real = Server_15_server_count
+derived function queue_count_16(): Real = Server_16_queue_count
+derived function server_count_16(): Real = Server_16_server_count
+derived function queue_count_17(): Real = Server_17_queue_count
+derived function server_count_17(): Real = Server_17_server_count
+derived function queue_count_18(): Real = Server_18_queue_count
+derived function server_count_18(): Real = Server_18_server_count
+derived function queue_count_19(): Real = Server_19_queue_count
+derived function server_count_19(): Real = Server_19_server_count
+derived function queue_count_20(): Real = Server_20_queue_count
+derived function server_count_20(): Real = Server_20_server_count
+derived function in_system(): Real = Server_1_queue_count + Server_1_server_count + Server_2_queue_count + Server_2_server_count + Server_3_queue_count + Server_3_server_count + Server_4_queue_count + Server_4_server_count + Server_5_queue_count + Server_5_server_count + Server_6_queue_count + Server_6_server_count + Server_7_queue_count + Server_7_server_count + Server_8_queue_count + Server_8_server_count + Server_9_queue_count + Server_9_server_count + Server_10_queue_count + Server_10_server_count + Server_11_queue_count + Server_11_server_count + Server_12_queue_count + Server_12_server_count + Server_13_queue_count + Server_13_server_count + Server_14_queue_count + Server_14_server_count + Server_15_queue_count + Server_15_server_count + Server_16_queue_count + Server_16_server_count + Server_17_queue_count + Server_17_server_count + Server_18_queue_count + Server_18_server_count + Server_19_queue_count + Server_19_server_count + Server_20_queue_count + Server_20_server_count
+derived function L_q_total(): Real = Server_1_queue_count + Server_2_queue_count + Server_3_queue_count + Server_4_queue_count + Server_5_queue_count + Server_6_queue_count + Server_7_queue_count + Server_8_queue_count + Server_9_queue_count + Server_10_queue_count + Server_11_queue_count + Server_12_queue_count + Server_13_queue_count + Server_14_queue_count + Server_15_queue_count + Server_16_queue_count + Server_17_queue_count + Server_18_queue_count + Server_19_queue_count + Server_20_queue_count
+derived function departure_count(): Real = Sink_departure_count
+
+// ============================================================
+// Dynamic Function Declarations
+// ============================================================
+
+// Event list entry properties
+dynamic function cel_component(e: ComponentEvent): Component
+dynamic function cel_time(e: ComponentEvent): Real
+dynamic function ft_time(e: FinishTime): Real
+
+// ============================================================
+// Component Rules (Atomic Model Transitions)
+// ============================================================
+
+// Internal transition: delta_int for Generator
+rule internal_transition_Generator() =
+    if phase_Generator == "active" then
+        phase_Generator := "active"
+        Generator_job_count := Generator_job_count + 1
+    endif
+
+    // Update timing
+    tl_Generator := sim_clocktime
+    tn_Generator := sim_clocktime + interarrival_time
+endrule
+
+// External transition: delta_ext for Generator
+rule external_transition_Generator() =
+    skip
+endrule
+
+// Output function: lambda for Generator
+rule output_function_Generator() =
+    if phase_Generator == "active" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_1 (multi-server c=5)
+rule internal_transition_Server_1() =
+    if phase_Server_1 == "starting" then
+        phase_Server_1 := "busy"
+        Server_1_queue_count := Server_1_queue_count - 1
+        Server_1_server_count := Server_1_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_1
+        lib.add(Server_1_finish_list, new_finish)
+        if Server_1_queue_count > 0 and Server_1_server_count < service_capacity then
+            phase_Server_1 := "starting"
+        endif
+    elseif phase_Server_1 == "busy" then
+        lib.sort(Server_1_finish_list, "ft_time")
+        let finished = lib.pop(Server_1_finish_list)
+        Server_1_server_count := Server_1_server_count - 1
+        if Server_1_queue_count > 0 then
+            phase_Server_1 := "starting"
+        elseif Server_1_server_count == 0 then
+            phase_Server_1 := "passive"
+        endif
+    endif
+
+    tl_Server_1 := sim_clocktime
+    if phase_Server_1 == "passive" then
+        tn_Server_1 := sim_clocktime + 999999999.0
+    elseif phase_Server_1 == "starting" then
+        tn_Server_1 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_1_finish_list, "ft_time")
+        let earliest = lib.get(Server_1_finish_list, 0)
+        tn_Server_1 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_1 (multi-server c=5)
+rule external_transition_Server_1() =
+    Server_1_queue_count := Server_1_queue_count + 1
+    if phase_Server_1 == "passive" then
+        phase_Server_1 := "starting"
+        tl_Server_1 := sim_clocktime
+        tn_Server_1 := sim_clocktime + 0.0
+    elseif phase_Server_1 == "starting" then
+        skip
+    elseif phase_Server_1 == "busy" and Server_1_server_count < service_capacity then
+        phase_Server_1 := "starting"
+        tl_Server_1 := sim_clocktime
+        tn_Server_1 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_1
+rule output_function_Server_1() =
+    if phase_Server_1 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_2 (multi-server c=5)
+rule internal_transition_Server_2() =
+    if phase_Server_2 == "starting" then
+        phase_Server_2 := "busy"
+        Server_2_queue_count := Server_2_queue_count - 1
+        Server_2_server_count := Server_2_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_2
+        lib.add(Server_2_finish_list, new_finish)
+        if Server_2_queue_count > 0 and Server_2_server_count < service_capacity then
+            phase_Server_2 := "starting"
+        endif
+    elseif phase_Server_2 == "busy" then
+        lib.sort(Server_2_finish_list, "ft_time")
+        let finished = lib.pop(Server_2_finish_list)
+        Server_2_server_count := Server_2_server_count - 1
+        if Server_2_queue_count > 0 then
+            phase_Server_2 := "starting"
+        elseif Server_2_server_count == 0 then
+            phase_Server_2 := "passive"
+        endif
+    endif
+
+    tl_Server_2 := sim_clocktime
+    if phase_Server_2 == "passive" then
+        tn_Server_2 := sim_clocktime + 999999999.0
+    elseif phase_Server_2 == "starting" then
+        tn_Server_2 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_2_finish_list, "ft_time")
+        let earliest = lib.get(Server_2_finish_list, 0)
+        tn_Server_2 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_2 (multi-server c=5)
+rule external_transition_Server_2() =
+    Server_2_queue_count := Server_2_queue_count + 1
+    if phase_Server_2 == "passive" then
+        phase_Server_2 := "starting"
+        tl_Server_2 := sim_clocktime
+        tn_Server_2 := sim_clocktime + 0.0
+    elseif phase_Server_2 == "starting" then
+        skip
+    elseif phase_Server_2 == "busy" and Server_2_server_count < service_capacity then
+        phase_Server_2 := "starting"
+        tl_Server_2 := sim_clocktime
+        tn_Server_2 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_2
+rule output_function_Server_2() =
+    if phase_Server_2 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_3 (multi-server c=5)
+rule internal_transition_Server_3() =
+    if phase_Server_3 == "starting" then
+        phase_Server_3 := "busy"
+        Server_3_queue_count := Server_3_queue_count - 1
+        Server_3_server_count := Server_3_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_3
+        lib.add(Server_3_finish_list, new_finish)
+        if Server_3_queue_count > 0 and Server_3_server_count < service_capacity then
+            phase_Server_3 := "starting"
+        endif
+    elseif phase_Server_3 == "busy" then
+        lib.sort(Server_3_finish_list, "ft_time")
+        let finished = lib.pop(Server_3_finish_list)
+        Server_3_server_count := Server_3_server_count - 1
+        if Server_3_queue_count > 0 then
+            phase_Server_3 := "starting"
+        elseif Server_3_server_count == 0 then
+            phase_Server_3 := "passive"
+        endif
+    endif
+
+    tl_Server_3 := sim_clocktime
+    if phase_Server_3 == "passive" then
+        tn_Server_3 := sim_clocktime + 999999999.0
+    elseif phase_Server_3 == "starting" then
+        tn_Server_3 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_3_finish_list, "ft_time")
+        let earliest = lib.get(Server_3_finish_list, 0)
+        tn_Server_3 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_3 (multi-server c=5)
+rule external_transition_Server_3() =
+    Server_3_queue_count := Server_3_queue_count + 1
+    if phase_Server_3 == "passive" then
+        phase_Server_3 := "starting"
+        tl_Server_3 := sim_clocktime
+        tn_Server_3 := sim_clocktime + 0.0
+    elseif phase_Server_3 == "starting" then
+        skip
+    elseif phase_Server_3 == "busy" and Server_3_server_count < service_capacity then
+        phase_Server_3 := "starting"
+        tl_Server_3 := sim_clocktime
+        tn_Server_3 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_3
+rule output_function_Server_3() =
+    if phase_Server_3 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_4 (multi-server c=5)
+rule internal_transition_Server_4() =
+    if phase_Server_4 == "starting" then
+        phase_Server_4 := "busy"
+        Server_4_queue_count := Server_4_queue_count - 1
+        Server_4_server_count := Server_4_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_4
+        lib.add(Server_4_finish_list, new_finish)
+        if Server_4_queue_count > 0 and Server_4_server_count < service_capacity then
+            phase_Server_4 := "starting"
+        endif
+    elseif phase_Server_4 == "busy" then
+        lib.sort(Server_4_finish_list, "ft_time")
+        let finished = lib.pop(Server_4_finish_list)
+        Server_4_server_count := Server_4_server_count - 1
+        if Server_4_queue_count > 0 then
+            phase_Server_4 := "starting"
+        elseif Server_4_server_count == 0 then
+            phase_Server_4 := "passive"
+        endif
+    endif
+
+    tl_Server_4 := sim_clocktime
+    if phase_Server_4 == "passive" then
+        tn_Server_4 := sim_clocktime + 999999999.0
+    elseif phase_Server_4 == "starting" then
+        tn_Server_4 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_4_finish_list, "ft_time")
+        let earliest = lib.get(Server_4_finish_list, 0)
+        tn_Server_4 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_4 (multi-server c=5)
+rule external_transition_Server_4() =
+    Server_4_queue_count := Server_4_queue_count + 1
+    if phase_Server_4 == "passive" then
+        phase_Server_4 := "starting"
+        tl_Server_4 := sim_clocktime
+        tn_Server_4 := sim_clocktime + 0.0
+    elseif phase_Server_4 == "starting" then
+        skip
+    elseif phase_Server_4 == "busy" and Server_4_server_count < service_capacity then
+        phase_Server_4 := "starting"
+        tl_Server_4 := sim_clocktime
+        tn_Server_4 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_4
+rule output_function_Server_4() =
+    if phase_Server_4 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_5 (multi-server c=5)
+rule internal_transition_Server_5() =
+    if phase_Server_5 == "starting" then
+        phase_Server_5 := "busy"
+        Server_5_queue_count := Server_5_queue_count - 1
+        Server_5_server_count := Server_5_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_5
+        lib.add(Server_5_finish_list, new_finish)
+        if Server_5_queue_count > 0 and Server_5_server_count < service_capacity then
+            phase_Server_5 := "starting"
+        endif
+    elseif phase_Server_5 == "busy" then
+        lib.sort(Server_5_finish_list, "ft_time")
+        let finished = lib.pop(Server_5_finish_list)
+        Server_5_server_count := Server_5_server_count - 1
+        if Server_5_queue_count > 0 then
+            phase_Server_5 := "starting"
+        elseif Server_5_server_count == 0 then
+            phase_Server_5 := "passive"
+        endif
+    endif
+
+    tl_Server_5 := sim_clocktime
+    if phase_Server_5 == "passive" then
+        tn_Server_5 := sim_clocktime + 999999999.0
+    elseif phase_Server_5 == "starting" then
+        tn_Server_5 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_5_finish_list, "ft_time")
+        let earliest = lib.get(Server_5_finish_list, 0)
+        tn_Server_5 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_5 (multi-server c=5)
+rule external_transition_Server_5() =
+    Server_5_queue_count := Server_5_queue_count + 1
+    if phase_Server_5 == "passive" then
+        phase_Server_5 := "starting"
+        tl_Server_5 := sim_clocktime
+        tn_Server_5 := sim_clocktime + 0.0
+    elseif phase_Server_5 == "starting" then
+        skip
+    elseif phase_Server_5 == "busy" and Server_5_server_count < service_capacity then
+        phase_Server_5 := "starting"
+        tl_Server_5 := sim_clocktime
+        tn_Server_5 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_5
+rule output_function_Server_5() =
+    if phase_Server_5 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_6 (multi-server c=5)
+rule internal_transition_Server_6() =
+    if phase_Server_6 == "starting" then
+        phase_Server_6 := "busy"
+        Server_6_queue_count := Server_6_queue_count - 1
+        Server_6_server_count := Server_6_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_6
+        lib.add(Server_6_finish_list, new_finish)
+        if Server_6_queue_count > 0 and Server_6_server_count < service_capacity then
+            phase_Server_6 := "starting"
+        endif
+    elseif phase_Server_6 == "busy" then
+        lib.sort(Server_6_finish_list, "ft_time")
+        let finished = lib.pop(Server_6_finish_list)
+        Server_6_server_count := Server_6_server_count - 1
+        if Server_6_queue_count > 0 then
+            phase_Server_6 := "starting"
+        elseif Server_6_server_count == 0 then
+            phase_Server_6 := "passive"
+        endif
+    endif
+
+    tl_Server_6 := sim_clocktime
+    if phase_Server_6 == "passive" then
+        tn_Server_6 := sim_clocktime + 999999999.0
+    elseif phase_Server_6 == "starting" then
+        tn_Server_6 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_6_finish_list, "ft_time")
+        let earliest = lib.get(Server_6_finish_list, 0)
+        tn_Server_6 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_6 (multi-server c=5)
+rule external_transition_Server_6() =
+    Server_6_queue_count := Server_6_queue_count + 1
+    if phase_Server_6 == "passive" then
+        phase_Server_6 := "starting"
+        tl_Server_6 := sim_clocktime
+        tn_Server_6 := sim_clocktime + 0.0
+    elseif phase_Server_6 == "starting" then
+        skip
+    elseif phase_Server_6 == "busy" and Server_6_server_count < service_capacity then
+        phase_Server_6 := "starting"
+        tl_Server_6 := sim_clocktime
+        tn_Server_6 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_6
+rule output_function_Server_6() =
+    if phase_Server_6 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_7 (multi-server c=5)
+rule internal_transition_Server_7() =
+    if phase_Server_7 == "starting" then
+        phase_Server_7 := "busy"
+        Server_7_queue_count := Server_7_queue_count - 1
+        Server_7_server_count := Server_7_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_7
+        lib.add(Server_7_finish_list, new_finish)
+        if Server_7_queue_count > 0 and Server_7_server_count < service_capacity then
+            phase_Server_7 := "starting"
+        endif
+    elseif phase_Server_7 == "busy" then
+        lib.sort(Server_7_finish_list, "ft_time")
+        let finished = lib.pop(Server_7_finish_list)
+        Server_7_server_count := Server_7_server_count - 1
+        if Server_7_queue_count > 0 then
+            phase_Server_7 := "starting"
+        elseif Server_7_server_count == 0 then
+            phase_Server_7 := "passive"
+        endif
+    endif
+
+    tl_Server_7 := sim_clocktime
+    if phase_Server_7 == "passive" then
+        tn_Server_7 := sim_clocktime + 999999999.0
+    elseif phase_Server_7 == "starting" then
+        tn_Server_7 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_7_finish_list, "ft_time")
+        let earliest = lib.get(Server_7_finish_list, 0)
+        tn_Server_7 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_7 (multi-server c=5)
+rule external_transition_Server_7() =
+    Server_7_queue_count := Server_7_queue_count + 1
+    if phase_Server_7 == "passive" then
+        phase_Server_7 := "starting"
+        tl_Server_7 := sim_clocktime
+        tn_Server_7 := sim_clocktime + 0.0
+    elseif phase_Server_7 == "starting" then
+        skip
+    elseif phase_Server_7 == "busy" and Server_7_server_count < service_capacity then
+        phase_Server_7 := "starting"
+        tl_Server_7 := sim_clocktime
+        tn_Server_7 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_7
+rule output_function_Server_7() =
+    if phase_Server_7 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_8 (multi-server c=5)
+rule internal_transition_Server_8() =
+    if phase_Server_8 == "starting" then
+        phase_Server_8 := "busy"
+        Server_8_queue_count := Server_8_queue_count - 1
+        Server_8_server_count := Server_8_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_8
+        lib.add(Server_8_finish_list, new_finish)
+        if Server_8_queue_count > 0 and Server_8_server_count < service_capacity then
+            phase_Server_8 := "starting"
+        endif
+    elseif phase_Server_8 == "busy" then
+        lib.sort(Server_8_finish_list, "ft_time")
+        let finished = lib.pop(Server_8_finish_list)
+        Server_8_server_count := Server_8_server_count - 1
+        if Server_8_queue_count > 0 then
+            phase_Server_8 := "starting"
+        elseif Server_8_server_count == 0 then
+            phase_Server_8 := "passive"
+        endif
+    endif
+
+    tl_Server_8 := sim_clocktime
+    if phase_Server_8 == "passive" then
+        tn_Server_8 := sim_clocktime + 999999999.0
+    elseif phase_Server_8 == "starting" then
+        tn_Server_8 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_8_finish_list, "ft_time")
+        let earliest = lib.get(Server_8_finish_list, 0)
+        tn_Server_8 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_8 (multi-server c=5)
+rule external_transition_Server_8() =
+    Server_8_queue_count := Server_8_queue_count + 1
+    if phase_Server_8 == "passive" then
+        phase_Server_8 := "starting"
+        tl_Server_8 := sim_clocktime
+        tn_Server_8 := sim_clocktime + 0.0
+    elseif phase_Server_8 == "starting" then
+        skip
+    elseif phase_Server_8 == "busy" and Server_8_server_count < service_capacity then
+        phase_Server_8 := "starting"
+        tl_Server_8 := sim_clocktime
+        tn_Server_8 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_8
+rule output_function_Server_8() =
+    if phase_Server_8 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_9 (multi-server c=5)
+rule internal_transition_Server_9() =
+    if phase_Server_9 == "starting" then
+        phase_Server_9 := "busy"
+        Server_9_queue_count := Server_9_queue_count - 1
+        Server_9_server_count := Server_9_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_9
+        lib.add(Server_9_finish_list, new_finish)
+        if Server_9_queue_count > 0 and Server_9_server_count < service_capacity then
+            phase_Server_9 := "starting"
+        endif
+    elseif phase_Server_9 == "busy" then
+        lib.sort(Server_9_finish_list, "ft_time")
+        let finished = lib.pop(Server_9_finish_list)
+        Server_9_server_count := Server_9_server_count - 1
+        if Server_9_queue_count > 0 then
+            phase_Server_9 := "starting"
+        elseif Server_9_server_count == 0 then
+            phase_Server_9 := "passive"
+        endif
+    endif
+
+    tl_Server_9 := sim_clocktime
+    if phase_Server_9 == "passive" then
+        tn_Server_9 := sim_clocktime + 999999999.0
+    elseif phase_Server_9 == "starting" then
+        tn_Server_9 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_9_finish_list, "ft_time")
+        let earliest = lib.get(Server_9_finish_list, 0)
+        tn_Server_9 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_9 (multi-server c=5)
+rule external_transition_Server_9() =
+    Server_9_queue_count := Server_9_queue_count + 1
+    if phase_Server_9 == "passive" then
+        phase_Server_9 := "starting"
+        tl_Server_9 := sim_clocktime
+        tn_Server_9 := sim_clocktime + 0.0
+    elseif phase_Server_9 == "starting" then
+        skip
+    elseif phase_Server_9 == "busy" and Server_9_server_count < service_capacity then
+        phase_Server_9 := "starting"
+        tl_Server_9 := sim_clocktime
+        tn_Server_9 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_9
+rule output_function_Server_9() =
+    if phase_Server_9 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_10 (multi-server c=5)
+rule internal_transition_Server_10() =
+    if phase_Server_10 == "starting" then
+        phase_Server_10 := "busy"
+        Server_10_queue_count := Server_10_queue_count - 1
+        Server_10_server_count := Server_10_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_10
+        lib.add(Server_10_finish_list, new_finish)
+        if Server_10_queue_count > 0 and Server_10_server_count < service_capacity then
+            phase_Server_10 := "starting"
+        endif
+    elseif phase_Server_10 == "busy" then
+        lib.sort(Server_10_finish_list, "ft_time")
+        let finished = lib.pop(Server_10_finish_list)
+        Server_10_server_count := Server_10_server_count - 1
+        if Server_10_queue_count > 0 then
+            phase_Server_10 := "starting"
+        elseif Server_10_server_count == 0 then
+            phase_Server_10 := "passive"
+        endif
+    endif
+
+    tl_Server_10 := sim_clocktime
+    if phase_Server_10 == "passive" then
+        tn_Server_10 := sim_clocktime + 999999999.0
+    elseif phase_Server_10 == "starting" then
+        tn_Server_10 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_10_finish_list, "ft_time")
+        let earliest = lib.get(Server_10_finish_list, 0)
+        tn_Server_10 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_10 (multi-server c=5)
+rule external_transition_Server_10() =
+    Server_10_queue_count := Server_10_queue_count + 1
+    if phase_Server_10 == "passive" then
+        phase_Server_10 := "starting"
+        tl_Server_10 := sim_clocktime
+        tn_Server_10 := sim_clocktime + 0.0
+    elseif phase_Server_10 == "starting" then
+        skip
+    elseif phase_Server_10 == "busy" and Server_10_server_count < service_capacity then
+        phase_Server_10 := "starting"
+        tl_Server_10 := sim_clocktime
+        tn_Server_10 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_10
+rule output_function_Server_10() =
+    if phase_Server_10 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_11 (multi-server c=5)
+rule internal_transition_Server_11() =
+    if phase_Server_11 == "starting" then
+        phase_Server_11 := "busy"
+        Server_11_queue_count := Server_11_queue_count - 1
+        Server_11_server_count := Server_11_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_11
+        lib.add(Server_11_finish_list, new_finish)
+        if Server_11_queue_count > 0 and Server_11_server_count < service_capacity then
+            phase_Server_11 := "starting"
+        endif
+    elseif phase_Server_11 == "busy" then
+        lib.sort(Server_11_finish_list, "ft_time")
+        let finished = lib.pop(Server_11_finish_list)
+        Server_11_server_count := Server_11_server_count - 1
+        if Server_11_queue_count > 0 then
+            phase_Server_11 := "starting"
+        elseif Server_11_server_count == 0 then
+            phase_Server_11 := "passive"
+        endif
+    endif
+
+    tl_Server_11 := sim_clocktime
+    if phase_Server_11 == "passive" then
+        tn_Server_11 := sim_clocktime + 999999999.0
+    elseif phase_Server_11 == "starting" then
+        tn_Server_11 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_11_finish_list, "ft_time")
+        let earliest = lib.get(Server_11_finish_list, 0)
+        tn_Server_11 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_11 (multi-server c=5)
+rule external_transition_Server_11() =
+    Server_11_queue_count := Server_11_queue_count + 1
+    if phase_Server_11 == "passive" then
+        phase_Server_11 := "starting"
+        tl_Server_11 := sim_clocktime
+        tn_Server_11 := sim_clocktime + 0.0
+    elseif phase_Server_11 == "starting" then
+        skip
+    elseif phase_Server_11 == "busy" and Server_11_server_count < service_capacity then
+        phase_Server_11 := "starting"
+        tl_Server_11 := sim_clocktime
+        tn_Server_11 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_11
+rule output_function_Server_11() =
+    if phase_Server_11 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_12 (multi-server c=5)
+rule internal_transition_Server_12() =
+    if phase_Server_12 == "starting" then
+        phase_Server_12 := "busy"
+        Server_12_queue_count := Server_12_queue_count - 1
+        Server_12_server_count := Server_12_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_12
+        lib.add(Server_12_finish_list, new_finish)
+        if Server_12_queue_count > 0 and Server_12_server_count < service_capacity then
+            phase_Server_12 := "starting"
+        endif
+    elseif phase_Server_12 == "busy" then
+        lib.sort(Server_12_finish_list, "ft_time")
+        let finished = lib.pop(Server_12_finish_list)
+        Server_12_server_count := Server_12_server_count - 1
+        if Server_12_queue_count > 0 then
+            phase_Server_12 := "starting"
+        elseif Server_12_server_count == 0 then
+            phase_Server_12 := "passive"
+        endif
+    endif
+
+    tl_Server_12 := sim_clocktime
+    if phase_Server_12 == "passive" then
+        tn_Server_12 := sim_clocktime + 999999999.0
+    elseif phase_Server_12 == "starting" then
+        tn_Server_12 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_12_finish_list, "ft_time")
+        let earliest = lib.get(Server_12_finish_list, 0)
+        tn_Server_12 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_12 (multi-server c=5)
+rule external_transition_Server_12() =
+    Server_12_queue_count := Server_12_queue_count + 1
+    if phase_Server_12 == "passive" then
+        phase_Server_12 := "starting"
+        tl_Server_12 := sim_clocktime
+        tn_Server_12 := sim_clocktime + 0.0
+    elseif phase_Server_12 == "starting" then
+        skip
+    elseif phase_Server_12 == "busy" and Server_12_server_count < service_capacity then
+        phase_Server_12 := "starting"
+        tl_Server_12 := sim_clocktime
+        tn_Server_12 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_12
+rule output_function_Server_12() =
+    if phase_Server_12 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_13 (multi-server c=5)
+rule internal_transition_Server_13() =
+    if phase_Server_13 == "starting" then
+        phase_Server_13 := "busy"
+        Server_13_queue_count := Server_13_queue_count - 1
+        Server_13_server_count := Server_13_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_13
+        lib.add(Server_13_finish_list, new_finish)
+        if Server_13_queue_count > 0 and Server_13_server_count < service_capacity then
+            phase_Server_13 := "starting"
+        endif
+    elseif phase_Server_13 == "busy" then
+        lib.sort(Server_13_finish_list, "ft_time")
+        let finished = lib.pop(Server_13_finish_list)
+        Server_13_server_count := Server_13_server_count - 1
+        if Server_13_queue_count > 0 then
+            phase_Server_13 := "starting"
+        elseif Server_13_server_count == 0 then
+            phase_Server_13 := "passive"
+        endif
+    endif
+
+    tl_Server_13 := sim_clocktime
+    if phase_Server_13 == "passive" then
+        tn_Server_13 := sim_clocktime + 999999999.0
+    elseif phase_Server_13 == "starting" then
+        tn_Server_13 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_13_finish_list, "ft_time")
+        let earliest = lib.get(Server_13_finish_list, 0)
+        tn_Server_13 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_13 (multi-server c=5)
+rule external_transition_Server_13() =
+    Server_13_queue_count := Server_13_queue_count + 1
+    if phase_Server_13 == "passive" then
+        phase_Server_13 := "starting"
+        tl_Server_13 := sim_clocktime
+        tn_Server_13 := sim_clocktime + 0.0
+    elseif phase_Server_13 == "starting" then
+        skip
+    elseif phase_Server_13 == "busy" and Server_13_server_count < service_capacity then
+        phase_Server_13 := "starting"
+        tl_Server_13 := sim_clocktime
+        tn_Server_13 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_13
+rule output_function_Server_13() =
+    if phase_Server_13 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_14 (multi-server c=5)
+rule internal_transition_Server_14() =
+    if phase_Server_14 == "starting" then
+        phase_Server_14 := "busy"
+        Server_14_queue_count := Server_14_queue_count - 1
+        Server_14_server_count := Server_14_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_14
+        lib.add(Server_14_finish_list, new_finish)
+        if Server_14_queue_count > 0 and Server_14_server_count < service_capacity then
+            phase_Server_14 := "starting"
+        endif
+    elseif phase_Server_14 == "busy" then
+        lib.sort(Server_14_finish_list, "ft_time")
+        let finished = lib.pop(Server_14_finish_list)
+        Server_14_server_count := Server_14_server_count - 1
+        if Server_14_queue_count > 0 then
+            phase_Server_14 := "starting"
+        elseif Server_14_server_count == 0 then
+            phase_Server_14 := "passive"
+        endif
+    endif
+
+    tl_Server_14 := sim_clocktime
+    if phase_Server_14 == "passive" then
+        tn_Server_14 := sim_clocktime + 999999999.0
+    elseif phase_Server_14 == "starting" then
+        tn_Server_14 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_14_finish_list, "ft_time")
+        let earliest = lib.get(Server_14_finish_list, 0)
+        tn_Server_14 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_14 (multi-server c=5)
+rule external_transition_Server_14() =
+    Server_14_queue_count := Server_14_queue_count + 1
+    if phase_Server_14 == "passive" then
+        phase_Server_14 := "starting"
+        tl_Server_14 := sim_clocktime
+        tn_Server_14 := sim_clocktime + 0.0
+    elseif phase_Server_14 == "starting" then
+        skip
+    elseif phase_Server_14 == "busy" and Server_14_server_count < service_capacity then
+        phase_Server_14 := "starting"
+        tl_Server_14 := sim_clocktime
+        tn_Server_14 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_14
+rule output_function_Server_14() =
+    if phase_Server_14 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_15 (multi-server c=5)
+rule internal_transition_Server_15() =
+    if phase_Server_15 == "starting" then
+        phase_Server_15 := "busy"
+        Server_15_queue_count := Server_15_queue_count - 1
+        Server_15_server_count := Server_15_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_15
+        lib.add(Server_15_finish_list, new_finish)
+        if Server_15_queue_count > 0 and Server_15_server_count < service_capacity then
+            phase_Server_15 := "starting"
+        endif
+    elseif phase_Server_15 == "busy" then
+        lib.sort(Server_15_finish_list, "ft_time")
+        let finished = lib.pop(Server_15_finish_list)
+        Server_15_server_count := Server_15_server_count - 1
+        if Server_15_queue_count > 0 then
+            phase_Server_15 := "starting"
+        elseif Server_15_server_count == 0 then
+            phase_Server_15 := "passive"
+        endif
+    endif
+
+    tl_Server_15 := sim_clocktime
+    if phase_Server_15 == "passive" then
+        tn_Server_15 := sim_clocktime + 999999999.0
+    elseif phase_Server_15 == "starting" then
+        tn_Server_15 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_15_finish_list, "ft_time")
+        let earliest = lib.get(Server_15_finish_list, 0)
+        tn_Server_15 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_15 (multi-server c=5)
+rule external_transition_Server_15() =
+    Server_15_queue_count := Server_15_queue_count + 1
+    if phase_Server_15 == "passive" then
+        phase_Server_15 := "starting"
+        tl_Server_15 := sim_clocktime
+        tn_Server_15 := sim_clocktime + 0.0
+    elseif phase_Server_15 == "starting" then
+        skip
+    elseif phase_Server_15 == "busy" and Server_15_server_count < service_capacity then
+        phase_Server_15 := "starting"
+        tl_Server_15 := sim_clocktime
+        tn_Server_15 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_15
+rule output_function_Server_15() =
+    if phase_Server_15 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_16 (multi-server c=5)
+rule internal_transition_Server_16() =
+    if phase_Server_16 == "starting" then
+        phase_Server_16 := "busy"
+        Server_16_queue_count := Server_16_queue_count - 1
+        Server_16_server_count := Server_16_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_16
+        lib.add(Server_16_finish_list, new_finish)
+        if Server_16_queue_count > 0 and Server_16_server_count < service_capacity then
+            phase_Server_16 := "starting"
+        endif
+    elseif phase_Server_16 == "busy" then
+        lib.sort(Server_16_finish_list, "ft_time")
+        let finished = lib.pop(Server_16_finish_list)
+        Server_16_server_count := Server_16_server_count - 1
+        if Server_16_queue_count > 0 then
+            phase_Server_16 := "starting"
+        elseif Server_16_server_count == 0 then
+            phase_Server_16 := "passive"
+        endif
+    endif
+
+    tl_Server_16 := sim_clocktime
+    if phase_Server_16 == "passive" then
+        tn_Server_16 := sim_clocktime + 999999999.0
+    elseif phase_Server_16 == "starting" then
+        tn_Server_16 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_16_finish_list, "ft_time")
+        let earliest = lib.get(Server_16_finish_list, 0)
+        tn_Server_16 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_16 (multi-server c=5)
+rule external_transition_Server_16() =
+    Server_16_queue_count := Server_16_queue_count + 1
+    if phase_Server_16 == "passive" then
+        phase_Server_16 := "starting"
+        tl_Server_16 := sim_clocktime
+        tn_Server_16 := sim_clocktime + 0.0
+    elseif phase_Server_16 == "starting" then
+        skip
+    elseif phase_Server_16 == "busy" and Server_16_server_count < service_capacity then
+        phase_Server_16 := "starting"
+        tl_Server_16 := sim_clocktime
+        tn_Server_16 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_16
+rule output_function_Server_16() =
+    if phase_Server_16 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_17 (multi-server c=5)
+rule internal_transition_Server_17() =
+    if phase_Server_17 == "starting" then
+        phase_Server_17 := "busy"
+        Server_17_queue_count := Server_17_queue_count - 1
+        Server_17_server_count := Server_17_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_17
+        lib.add(Server_17_finish_list, new_finish)
+        if Server_17_queue_count > 0 and Server_17_server_count < service_capacity then
+            phase_Server_17 := "starting"
+        endif
+    elseif phase_Server_17 == "busy" then
+        lib.sort(Server_17_finish_list, "ft_time")
+        let finished = lib.pop(Server_17_finish_list)
+        Server_17_server_count := Server_17_server_count - 1
+        if Server_17_queue_count > 0 then
+            phase_Server_17 := "starting"
+        elseif Server_17_server_count == 0 then
+            phase_Server_17 := "passive"
+        endif
+    endif
+
+    tl_Server_17 := sim_clocktime
+    if phase_Server_17 == "passive" then
+        tn_Server_17 := sim_clocktime + 999999999.0
+    elseif phase_Server_17 == "starting" then
+        tn_Server_17 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_17_finish_list, "ft_time")
+        let earliest = lib.get(Server_17_finish_list, 0)
+        tn_Server_17 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_17 (multi-server c=5)
+rule external_transition_Server_17() =
+    Server_17_queue_count := Server_17_queue_count + 1
+    if phase_Server_17 == "passive" then
+        phase_Server_17 := "starting"
+        tl_Server_17 := sim_clocktime
+        tn_Server_17 := sim_clocktime + 0.0
+    elseif phase_Server_17 == "starting" then
+        skip
+    elseif phase_Server_17 == "busy" and Server_17_server_count < service_capacity then
+        phase_Server_17 := "starting"
+        tl_Server_17 := sim_clocktime
+        tn_Server_17 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_17
+rule output_function_Server_17() =
+    if phase_Server_17 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_18 (multi-server c=5)
+rule internal_transition_Server_18() =
+    if phase_Server_18 == "starting" then
+        phase_Server_18 := "busy"
+        Server_18_queue_count := Server_18_queue_count - 1
+        Server_18_server_count := Server_18_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_18
+        lib.add(Server_18_finish_list, new_finish)
+        if Server_18_queue_count > 0 and Server_18_server_count < service_capacity then
+            phase_Server_18 := "starting"
+        endif
+    elseif phase_Server_18 == "busy" then
+        lib.sort(Server_18_finish_list, "ft_time")
+        let finished = lib.pop(Server_18_finish_list)
+        Server_18_server_count := Server_18_server_count - 1
+        if Server_18_queue_count > 0 then
+            phase_Server_18 := "starting"
+        elseif Server_18_server_count == 0 then
+            phase_Server_18 := "passive"
+        endif
+    endif
+
+    tl_Server_18 := sim_clocktime
+    if phase_Server_18 == "passive" then
+        tn_Server_18 := sim_clocktime + 999999999.0
+    elseif phase_Server_18 == "starting" then
+        tn_Server_18 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_18_finish_list, "ft_time")
+        let earliest = lib.get(Server_18_finish_list, 0)
+        tn_Server_18 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_18 (multi-server c=5)
+rule external_transition_Server_18() =
+    Server_18_queue_count := Server_18_queue_count + 1
+    if phase_Server_18 == "passive" then
+        phase_Server_18 := "starting"
+        tl_Server_18 := sim_clocktime
+        tn_Server_18 := sim_clocktime + 0.0
+    elseif phase_Server_18 == "starting" then
+        skip
+    elseif phase_Server_18 == "busy" and Server_18_server_count < service_capacity then
+        phase_Server_18 := "starting"
+        tl_Server_18 := sim_clocktime
+        tn_Server_18 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_18
+rule output_function_Server_18() =
+    if phase_Server_18 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_19 (multi-server c=5)
+rule internal_transition_Server_19() =
+    if phase_Server_19 == "starting" then
+        phase_Server_19 := "busy"
+        Server_19_queue_count := Server_19_queue_count - 1
+        Server_19_server_count := Server_19_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_19
+        lib.add(Server_19_finish_list, new_finish)
+        if Server_19_queue_count > 0 and Server_19_server_count < service_capacity then
+            phase_Server_19 := "starting"
+        endif
+    elseif phase_Server_19 == "busy" then
+        lib.sort(Server_19_finish_list, "ft_time")
+        let finished = lib.pop(Server_19_finish_list)
+        Server_19_server_count := Server_19_server_count - 1
+        if Server_19_queue_count > 0 then
+            phase_Server_19 := "starting"
+        elseif Server_19_server_count == 0 then
+            phase_Server_19 := "passive"
+        endif
+    endif
+
+    tl_Server_19 := sim_clocktime
+    if phase_Server_19 == "passive" then
+        tn_Server_19 := sim_clocktime + 999999999.0
+    elseif phase_Server_19 == "starting" then
+        tn_Server_19 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_19_finish_list, "ft_time")
+        let earliest = lib.get(Server_19_finish_list, 0)
+        tn_Server_19 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_19 (multi-server c=5)
+rule external_transition_Server_19() =
+    Server_19_queue_count := Server_19_queue_count + 1
+    if phase_Server_19 == "passive" then
+        phase_Server_19 := "starting"
+        tl_Server_19 := sim_clocktime
+        tn_Server_19 := sim_clocktime + 0.0
+    elseif phase_Server_19 == "starting" then
+        skip
+    elseif phase_Server_19 == "busy" and Server_19_server_count < service_capacity then
+        phase_Server_19 := "starting"
+        tl_Server_19 := sim_clocktime
+        tn_Server_19 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_19
+rule output_function_Server_19() =
+    if phase_Server_19 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Server_20 (multi-server c=5)
+rule internal_transition_Server_20() =
+    if phase_Server_20 == "starting" then
+        phase_Server_20 := "busy"
+        Server_20_queue_count := Server_20_queue_count - 1
+        Server_20_server_count := Server_20_server_count + 1
+        let new_finish = new FinishTime
+        ft_time(new_finish) := sim_clocktime + service_time_20
+        lib.add(Server_20_finish_list, new_finish)
+        if Server_20_queue_count > 0 and Server_20_server_count < service_capacity then
+            phase_Server_20 := "starting"
+        endif
+    elseif phase_Server_20 == "busy" then
+        lib.sort(Server_20_finish_list, "ft_time")
+        let finished = lib.pop(Server_20_finish_list)
+        Server_20_server_count := Server_20_server_count - 1
+        if Server_20_queue_count > 0 then
+            phase_Server_20 := "starting"
+        elseif Server_20_server_count == 0 then
+            phase_Server_20 := "passive"
+        endif
+    endif
+
+    tl_Server_20 := sim_clocktime
+    if phase_Server_20 == "passive" then
+        tn_Server_20 := sim_clocktime + 999999999.0
+    elseif phase_Server_20 == "starting" then
+        tn_Server_20 := sim_clocktime + 0.0
+    else
+        lib.sort(Server_20_finish_list, "ft_time")
+        let earliest = lib.get(Server_20_finish_list, 0)
+        tn_Server_20 := ft_time(earliest)
+    endif
+endrule
+
+// External transition: delta_ext for Server_20 (multi-server c=5)
+rule external_transition_Server_20() =
+    Server_20_queue_count := Server_20_queue_count + 1
+    if phase_Server_20 == "passive" then
+        phase_Server_20 := "starting"
+        tl_Server_20 := sim_clocktime
+        tn_Server_20 := sim_clocktime + 0.0
+    elseif phase_Server_20 == "starting" then
+        skip
+    elseif phase_Server_20 == "busy" and Server_20_server_count < service_capacity then
+        phase_Server_20 := "starting"
+        tl_Server_20 := sim_clocktime
+        tn_Server_20 := sim_clocktime + 0.0
+    endif
+endrule
+
+// Output function: lambda for Server_20
+rule output_function_Server_20() =
+    if phase_Server_20 == "busy" then
+        output_value := "out"
+    endif
+endrule
+
+// Internal transition: delta_int for Router
+rule internal_transition_Router() =
+    if phase_Router == "routing" then
+        phase_Router := "idle"
+    endif
+
+    // Update timing
+    tl_Router := sim_clocktime
+    if phase_Router == "idle" then
+        tn_Router := sim_clocktime + 999999999.0
+    else
+        tn_Router := sim_clocktime + 0.0
+    endif
+endrule
+
+// External transition: delta_ext for Router
+rule external_transition_Router() =
+    if phase_Router == "idle" then
+        phase_Router := "routing"
+        Router_route_decision := feedback_rng
+        tl_Router := sim_clocktime
+        tn_Router := sim_clocktime + 0.0
+    elseif phase_Router == "routing" then
+        phase_Router := "routing"
+        Router_route_decision := feedback_rng
+    endif
+endrule
+
+// Output function: lambda for Router
+rule output_function_Router() =
+    if phase_Router == "routing" and Router_route_decision < feedback_prob then
+        output_value := "feedback"
+    elseif phase_Router == "routing" and Router_route_decision >= feedback_prob then
+        output_value := "depart"
+    endif
+endrule
+
+// Internal transition: delta_int for Sink
+rule internal_transition_Sink() =
+    skip
+endrule
+
+// External transition: delta_ext for Sink
+rule external_transition_Sink() =
+    if phase_Sink == "idle" then
+        phase_Sink := "idle"
+        Sink_departure_count := Sink_departure_count + 1
+    endif
+endrule
+
+// Output function: lambda for Sink
+rule output_function_Sink() =
+    skip
+endrule
+
+
+// ============================================================
+// Coordinator Rules
+// ============================================================
+
+// Select imminent component: sort event list, pop earliest (tie-break by Select priority)
+rule select_imminent() =
+    // Sort event list by scheduled time (stable sort preserves Select priority)
+    lib.sort(future_event_list, "cel_time")
+
+    // Pop imminent (earliest) event
+    let imminent_event = lib.pop(future_event_list)
+    imminent_component := cel_component(imminent_event)
+
+    // Advance clock to event time
+    sim_clocktime := cel_time(imminent_event)
+endrule
+
+// Route output from imminent component to influenced receivers
+rule route_output() =
+    if imminent_component == "Generator" then
+        // Route: Generator.out -> Server_1.in
+        current_input_port := "in"
+        external_transition_Server_1()
+    elseif imminent_component == "Server_1" then
+        // Route: Server_1.out -> Server_2.in
+        current_input_port := "in"
+        external_transition_Server_2()
+    elseif imminent_component == "Server_2" then
+        // Route: Server_2.out -> Server_3.in
+        current_input_port := "in"
+        external_transition_Server_3()
+    elseif imminent_component == "Server_3" then
+        // Route: Server_3.out -> Server_4.in
+        current_input_port := "in"
+        external_transition_Server_4()
+    elseif imminent_component == "Server_4" then
+        // Route: Server_4.out -> Server_5.in
+        current_input_port := "in"
+        external_transition_Server_5()
+    elseif imminent_component == "Server_5" then
+        // Route: Server_5.out -> Server_6.in
+        current_input_port := "in"
+        external_transition_Server_6()
+    elseif imminent_component == "Server_6" then
+        // Route: Server_6.out -> Server_7.in
+        current_input_port := "in"
+        external_transition_Server_7()
+    elseif imminent_component == "Server_7" then
+        // Route: Server_7.out -> Server_8.in
+        current_input_port := "in"
+        external_transition_Server_8()
+    elseif imminent_component == "Server_8" then
+        // Route: Server_8.out -> Server_9.in
+        current_input_port := "in"
+        external_transition_Server_9()
+    elseif imminent_component == "Server_9" then
+        // Route: Server_9.out -> Server_10.in
+        current_input_port := "in"
+        external_transition_Server_10()
+    elseif imminent_component == "Server_10" then
+        // Route: Server_10.out -> Server_11.in
+        current_input_port := "in"
+        external_transition_Server_11()
+    elseif imminent_component == "Server_11" then
+        // Route: Server_11.out -> Server_12.in
+        current_input_port := "in"
+        external_transition_Server_12()
+    elseif imminent_component == "Server_12" then
+        // Route: Server_12.out -> Server_13.in
+        current_input_port := "in"
+        external_transition_Server_13()
+    elseif imminent_component == "Server_13" then
+        // Route: Server_13.out -> Server_14.in
+        current_input_port := "in"
+        external_transition_Server_14()
+    elseif imminent_component == "Server_14" then
+        // Route: Server_14.out -> Server_15.in
+        current_input_port := "in"
+        external_transition_Server_15()
+    elseif imminent_component == "Server_15" then
+        // Route: Server_15.out -> Server_16.in
+        current_input_port := "in"
+        external_transition_Server_16()
+    elseif imminent_component == "Server_16" then
+        // Route: Server_16.out -> Server_17.in
+        current_input_port := "in"
+        external_transition_Server_17()
+    elseif imminent_component == "Server_17" then
+        // Route: Server_17.out -> Server_18.in
+        current_input_port := "in"
+        external_transition_Server_18()
+    elseif imminent_component == "Server_18" then
+        // Route: Server_18.out -> Server_19.in
+        current_input_port := "in"
+        external_transition_Server_19()
+    elseif imminent_component == "Server_19" then
+        // Route: Server_19.out -> Server_20.in
+        current_input_port := "in"
+        external_transition_Server_20()
+    elseif imminent_component == "Server_20" then
+        // Route: Server_20.out -> Router.in
+        current_input_port := "in"
+        external_transition_Router()
+    elseif imminent_component == "Router" then
+        if output_value == "feedback" then
+            // Route: Router.feedback -> Server_1.in
+            current_input_port := "in"
+            external_transition_Server_1()
+        elseif output_value == "depart" then
+            // Route: Router.depart -> Sink.in
+            current_input_port := "in"
+            external_transition_Sink()
+        endif
+    endif
+endrule
+
+// Rebuild event list from current tn values (Select priority order for tie-breaking)
+rule update_event_list() =
+    future_event_list := []
+
+    let evt_Generator = new ComponentEvent
+    cel_component(evt_Generator) := "Generator"
+    cel_time(evt_Generator) := tn_Generator
+    lib.add(future_event_list, evt_Generator)
+
+    let evt_Server_1 = new ComponentEvent
+    cel_component(evt_Server_1) := "Server_1"
+    cel_time(evt_Server_1) := tn_Server_1
+    lib.add(future_event_list, evt_Server_1)
+
+    let evt_Server_2 = new ComponentEvent
+    cel_component(evt_Server_2) := "Server_2"
+    cel_time(evt_Server_2) := tn_Server_2
+    lib.add(future_event_list, evt_Server_2)
+
+    let evt_Server_3 = new ComponentEvent
+    cel_component(evt_Server_3) := "Server_3"
+    cel_time(evt_Server_3) := tn_Server_3
+    lib.add(future_event_list, evt_Server_3)
+
+    let evt_Server_4 = new ComponentEvent
+    cel_component(evt_Server_4) := "Server_4"
+    cel_time(evt_Server_4) := tn_Server_4
+    lib.add(future_event_list, evt_Server_4)
+
+    let evt_Server_5 = new ComponentEvent
+    cel_component(evt_Server_5) := "Server_5"
+    cel_time(evt_Server_5) := tn_Server_5
+    lib.add(future_event_list, evt_Server_5)
+
+    let evt_Server_6 = new ComponentEvent
+    cel_component(evt_Server_6) := "Server_6"
+    cel_time(evt_Server_6) := tn_Server_6
+    lib.add(future_event_list, evt_Server_6)
+
+    let evt_Server_7 = new ComponentEvent
+    cel_component(evt_Server_7) := "Server_7"
+    cel_time(evt_Server_7) := tn_Server_7
+    lib.add(future_event_list, evt_Server_7)
+
+    let evt_Server_8 = new ComponentEvent
+    cel_component(evt_Server_8) := "Server_8"
+    cel_time(evt_Server_8) := tn_Server_8
+    lib.add(future_event_list, evt_Server_8)
+
+    let evt_Server_9 = new ComponentEvent
+    cel_component(evt_Server_9) := "Server_9"
+    cel_time(evt_Server_9) := tn_Server_9
+    lib.add(future_event_list, evt_Server_9)
+
+    let evt_Server_10 = new ComponentEvent
+    cel_component(evt_Server_10) := "Server_10"
+    cel_time(evt_Server_10) := tn_Server_10
+    lib.add(future_event_list, evt_Server_10)
+
+    let evt_Server_11 = new ComponentEvent
+    cel_component(evt_Server_11) := "Server_11"
+    cel_time(evt_Server_11) := tn_Server_11
+    lib.add(future_event_list, evt_Server_11)
+
+    let evt_Server_12 = new ComponentEvent
+    cel_component(evt_Server_12) := "Server_12"
+    cel_time(evt_Server_12) := tn_Server_12
+    lib.add(future_event_list, evt_Server_12)
+
+    let evt_Server_13 = new ComponentEvent
+    cel_component(evt_Server_13) := "Server_13"
+    cel_time(evt_Server_13) := tn_Server_13
+    lib.add(future_event_list, evt_Server_13)
+
+    let evt_Server_14 = new ComponentEvent
+    cel_component(evt_Server_14) := "Server_14"
+    cel_time(evt_Server_14) := tn_Server_14
+    lib.add(future_event_list, evt_Server_14)
+
+    let evt_Server_15 = new ComponentEvent
+    cel_component(evt_Server_15) := "Server_15"
+    cel_time(evt_Server_15) := tn_Server_15
+    lib.add(future_event_list, evt_Server_15)
+
+    let evt_Server_16 = new ComponentEvent
+    cel_component(evt_Server_16) := "Server_16"
+    cel_time(evt_Server_16) := tn_Server_16
+    lib.add(future_event_list, evt_Server_16)
+
+    let evt_Server_17 = new ComponentEvent
+    cel_component(evt_Server_17) := "Server_17"
+    cel_time(evt_Server_17) := tn_Server_17
+    lib.add(future_event_list, evt_Server_17)
+
+    let evt_Server_18 = new ComponentEvent
+    cel_component(evt_Server_18) := "Server_18"
+    cel_time(evt_Server_18) := tn_Server_18
+    lib.add(future_event_list, evt_Server_18)
+
+    let evt_Server_19 = new ComponentEvent
+    cel_component(evt_Server_19) := "Server_19"
+    cel_time(evt_Server_19) := tn_Server_19
+    lib.add(future_event_list, evt_Server_19)
+
+    let evt_Server_20 = new ComponentEvent
+    cel_component(evt_Server_20) := "Server_20"
+    cel_time(evt_Server_20) := tn_Server_20
+    lib.add(future_event_list, evt_Server_20)
+
+    let evt_Router = new ComponentEvent
+    cel_component(evt_Router) := "Router"
+    cel_time(evt_Router) := tn_Router
+    lib.add(future_event_list, evt_Router)
+
+    let evt_Sink = new ComponentEvent
+    cel_component(evt_Sink) := "Sink"
+    cel_time(evt_Sink) := tn_Sink
+    lib.add(future_event_list, evt_Sink)
+
+endrule
+
+// ============================================================
+// Abstract Simulator Algorithm
+// ============================================================
+
+// Initialization: send (i, t0) to all component simulators
+rule initialisation_routine() =
+    sim_clocktime := 0.0
+
+    // Initialize Generator
+    phase_Generator := "active"
+    tl_Generator := 0.0
+    tn_Generator := interarrival_time
+    Generator_job_count := 0
+
+    // Initialize Server_1
+    phase_Server_1 := "passive"
+    tl_Server_1 := 0.0
+    tn_Server_1 := 999999999.0
+    Server_1_queue_count := 0
+    Server_1_server_count := 0
+    Server_1_finish_list := []
+
+    // Initialize Server_2
+    phase_Server_2 := "passive"
+    tl_Server_2 := 0.0
+    tn_Server_2 := 999999999.0
+    Server_2_queue_count := 0
+    Server_2_server_count := 0
+    Server_2_finish_list := []
+
+    // Initialize Server_3
+    phase_Server_3 := "passive"
+    tl_Server_3 := 0.0
+    tn_Server_3 := 999999999.0
+    Server_3_queue_count := 0
+    Server_3_server_count := 0
+    Server_3_finish_list := []
+
+    // Initialize Server_4
+    phase_Server_4 := "passive"
+    tl_Server_4 := 0.0
+    tn_Server_4 := 999999999.0
+    Server_4_queue_count := 0
+    Server_4_server_count := 0
+    Server_4_finish_list := []
+
+    // Initialize Server_5
+    phase_Server_5 := "passive"
+    tl_Server_5 := 0.0
+    tn_Server_5 := 999999999.0
+    Server_5_queue_count := 0
+    Server_5_server_count := 0
+    Server_5_finish_list := []
+
+    // Initialize Server_6
+    phase_Server_6 := "passive"
+    tl_Server_6 := 0.0
+    tn_Server_6 := 999999999.0
+    Server_6_queue_count := 0
+    Server_6_server_count := 0
+    Server_6_finish_list := []
+
+    // Initialize Server_7
+    phase_Server_7 := "passive"
+    tl_Server_7 := 0.0
+    tn_Server_7 := 999999999.0
+    Server_7_queue_count := 0
+    Server_7_server_count := 0
+    Server_7_finish_list := []
+
+    // Initialize Server_8
+    phase_Server_8 := "passive"
+    tl_Server_8 := 0.0
+    tn_Server_8 := 999999999.0
+    Server_8_queue_count := 0
+    Server_8_server_count := 0
+    Server_8_finish_list := []
+
+    // Initialize Server_9
+    phase_Server_9 := "passive"
+    tl_Server_9 := 0.0
+    tn_Server_9 := 999999999.0
+    Server_9_queue_count := 0
+    Server_9_server_count := 0
+    Server_9_finish_list := []
+
+    // Initialize Server_10
+    phase_Server_10 := "passive"
+    tl_Server_10 := 0.0
+    tn_Server_10 := 999999999.0
+    Server_10_queue_count := 0
+    Server_10_server_count := 0
+    Server_10_finish_list := []
+
+    // Initialize Server_11
+    phase_Server_11 := "passive"
+    tl_Server_11 := 0.0
+    tn_Server_11 := 999999999.0
+    Server_11_queue_count := 0
+    Server_11_server_count := 0
+    Server_11_finish_list := []
+
+    // Initialize Server_12
+    phase_Server_12 := "passive"
+    tl_Server_12 := 0.0
+    tn_Server_12 := 999999999.0
+    Server_12_queue_count := 0
+    Server_12_server_count := 0
+    Server_12_finish_list := []
+
+    // Initialize Server_13
+    phase_Server_13 := "passive"
+    tl_Server_13 := 0.0
+    tn_Server_13 := 999999999.0
+    Server_13_queue_count := 0
+    Server_13_server_count := 0
+    Server_13_finish_list := []
+
+    // Initialize Server_14
+    phase_Server_14 := "passive"
+    tl_Server_14 := 0.0
+    tn_Server_14 := 999999999.0
+    Server_14_queue_count := 0
+    Server_14_server_count := 0
+    Server_14_finish_list := []
+
+    // Initialize Server_15
+    phase_Server_15 := "passive"
+    tl_Server_15 := 0.0
+    tn_Server_15 := 999999999.0
+    Server_15_queue_count := 0
+    Server_15_server_count := 0
+    Server_15_finish_list := []
+
+    // Initialize Server_16
+    phase_Server_16 := "passive"
+    tl_Server_16 := 0.0
+    tn_Server_16 := 999999999.0
+    Server_16_queue_count := 0
+    Server_16_server_count := 0
+    Server_16_finish_list := []
+
+    // Initialize Server_17
+    phase_Server_17 := "passive"
+    tl_Server_17 := 0.0
+    tn_Server_17 := 999999999.0
+    Server_17_queue_count := 0
+    Server_17_server_count := 0
+    Server_17_finish_list := []
+
+    // Initialize Server_18
+    phase_Server_18 := "passive"
+    tl_Server_18 := 0.0
+    tn_Server_18 := 999999999.0
+    Server_18_queue_count := 0
+    Server_18_server_count := 0
+    Server_18_finish_list := []
+
+    // Initialize Server_19
+    phase_Server_19 := "passive"
+    tl_Server_19 := 0.0
+    tn_Server_19 := 999999999.0
+    Server_19_queue_count := 0
+    Server_19_server_count := 0
+    Server_19_finish_list := []
+
+    // Initialize Server_20
+    phase_Server_20 := "passive"
+    tl_Server_20 := 0.0
+    tn_Server_20 := 999999999.0
+    Server_20_queue_count := 0
+    Server_20_server_count := 0
+    Server_20_finish_list := []
+
+    // Initialize Router
+    phase_Router := "idle"
+    tl_Router := 0.0
+    tn_Router := 999999999.0
+    Router_route_decision := 0.0
+
+    // Initialize Sink
+    phase_Sink := "idle"
+    tl_Sink := 0.0
+    tn_Sink := 999999999.0
+    Sink_departure_count := 0
+
+    stopping_condition := false
+
+    // Initialize event list
+    future_event_list := []
+    let evt_Generator = new ComponentEvent
+    cel_component(evt_Generator) := "Generator"
+    cel_time(evt_Generator) := tn_Generator
+    lib.add(future_event_list, evt_Generator)
+    let evt_Server_1 = new ComponentEvent
+    cel_component(evt_Server_1) := "Server_1"
+    cel_time(evt_Server_1) := tn_Server_1
+    lib.add(future_event_list, evt_Server_1)
+    let evt_Server_2 = new ComponentEvent
+    cel_component(evt_Server_2) := "Server_2"
+    cel_time(evt_Server_2) := tn_Server_2
+    lib.add(future_event_list, evt_Server_2)
+    let evt_Server_3 = new ComponentEvent
+    cel_component(evt_Server_3) := "Server_3"
+    cel_time(evt_Server_3) := tn_Server_3
+    lib.add(future_event_list, evt_Server_3)
+    let evt_Server_4 = new ComponentEvent
+    cel_component(evt_Server_4) := "Server_4"
+    cel_time(evt_Server_4) := tn_Server_4
+    lib.add(future_event_list, evt_Server_4)
+    let evt_Server_5 = new ComponentEvent
+    cel_component(evt_Server_5) := "Server_5"
+    cel_time(evt_Server_5) := tn_Server_5
+    lib.add(future_event_list, evt_Server_5)
+    let evt_Server_6 = new ComponentEvent
+    cel_component(evt_Server_6) := "Server_6"
+    cel_time(evt_Server_6) := tn_Server_6
+    lib.add(future_event_list, evt_Server_6)
+    let evt_Server_7 = new ComponentEvent
+    cel_component(evt_Server_7) := "Server_7"
+    cel_time(evt_Server_7) := tn_Server_7
+    lib.add(future_event_list, evt_Server_7)
+    let evt_Server_8 = new ComponentEvent
+    cel_component(evt_Server_8) := "Server_8"
+    cel_time(evt_Server_8) := tn_Server_8
+    lib.add(future_event_list, evt_Server_8)
+    let evt_Server_9 = new ComponentEvent
+    cel_component(evt_Server_9) := "Server_9"
+    cel_time(evt_Server_9) := tn_Server_9
+    lib.add(future_event_list, evt_Server_9)
+    let evt_Server_10 = new ComponentEvent
+    cel_component(evt_Server_10) := "Server_10"
+    cel_time(evt_Server_10) := tn_Server_10
+    lib.add(future_event_list, evt_Server_10)
+    let evt_Server_11 = new ComponentEvent
+    cel_component(evt_Server_11) := "Server_11"
+    cel_time(evt_Server_11) := tn_Server_11
+    lib.add(future_event_list, evt_Server_11)
+    let evt_Server_12 = new ComponentEvent
+    cel_component(evt_Server_12) := "Server_12"
+    cel_time(evt_Server_12) := tn_Server_12
+    lib.add(future_event_list, evt_Server_12)
+    let evt_Server_13 = new ComponentEvent
+    cel_component(evt_Server_13) := "Server_13"
+    cel_time(evt_Server_13) := tn_Server_13
+    lib.add(future_event_list, evt_Server_13)
+    let evt_Server_14 = new ComponentEvent
+    cel_component(evt_Server_14) := "Server_14"
+    cel_time(evt_Server_14) := tn_Server_14
+    lib.add(future_event_list, evt_Server_14)
+    let evt_Server_15 = new ComponentEvent
+    cel_component(evt_Server_15) := "Server_15"
+    cel_time(evt_Server_15) := tn_Server_15
+    lib.add(future_event_list, evt_Server_15)
+    let evt_Server_16 = new ComponentEvent
+    cel_component(evt_Server_16) := "Server_16"
+    cel_time(evt_Server_16) := tn_Server_16
+    lib.add(future_event_list, evt_Server_16)
+    let evt_Server_17 = new ComponentEvent
+    cel_component(evt_Server_17) := "Server_17"
+    cel_time(evt_Server_17) := tn_Server_17
+    lib.add(future_event_list, evt_Server_17)
+    let evt_Server_18 = new ComponentEvent
+    cel_component(evt_Server_18) := "Server_18"
+    cel_time(evt_Server_18) := tn_Server_18
+    lib.add(future_event_list, evt_Server_18)
+    let evt_Server_19 = new ComponentEvent
+    cel_component(evt_Server_19) := "Server_19"
+    cel_time(evt_Server_19) := tn_Server_19
+    lib.add(future_event_list, evt_Server_19)
+    let evt_Server_20 = new ComponentEvent
+    cel_component(evt_Server_20) := "Server_20"
+    cel_time(evt_Server_20) := tn_Server_20
+    lib.add(future_event_list, evt_Server_20)
+    let evt_Router = new ComponentEvent
+    cel_component(evt_Router) := "Router"
+    cel_time(evt_Router) := tn_Router
+    lib.add(future_event_list, evt_Router)
+    let evt_Sink = new ComponentEvent
+    cel_component(evt_Sink) := "Sink"
+    cel_time(evt_Sink) := tn_Sink
+    lib.add(future_event_list, evt_Sink)
+endrule
+
+// One macro-step of the Abstract Simulator
+rule simulator_step() =
+    // Phase 1: Select imminent and advance time (sort FEL, pop earliest)
+    select_imminent()
+
+    // Phase 2: Output function (lambda) then internal transition (delta_int)
+    output_value := ""
+    if imminent_component == "Generator" then
+        output_function_Generator()
+        internal_transition_Generator()
+    elseif imminent_component == "Server_1" then
+        output_function_Server_1()
+        internal_transition_Server_1()
+    elseif imminent_component == "Server_2" then
+        output_function_Server_2()
+        internal_transition_Server_2()
+    elseif imminent_component == "Server_3" then
+        output_function_Server_3()
+        internal_transition_Server_3()
+    elseif imminent_component == "Server_4" then
+        output_function_Server_4()
+        internal_transition_Server_4()
+    elseif imminent_component == "Server_5" then
+        output_function_Server_5()
+        internal_transition_Server_5()
+    elseif imminent_component == "Server_6" then
+        output_function_Server_6()
+        internal_transition_Server_6()
+    elseif imminent_component == "Server_7" then
+        output_function_Server_7()
+        internal_transition_Server_7()
+    elseif imminent_component == "Server_8" then
+        output_function_Server_8()
+        internal_transition_Server_8()
+    elseif imminent_component == "Server_9" then
+        output_function_Server_9()
+        internal_transition_Server_9()
+    elseif imminent_component == "Server_10" then
+        output_function_Server_10()
+        internal_transition_Server_10()
+    elseif imminent_component == "Server_11" then
+        output_function_Server_11()
+        internal_transition_Server_11()
+    elseif imminent_component == "Server_12" then
+        output_function_Server_12()
+        internal_transition_Server_12()
+    elseif imminent_component == "Server_13" then
+        output_function_Server_13()
+        internal_transition_Server_13()
+    elseif imminent_component == "Server_14" then
+        output_function_Server_14()
+        internal_transition_Server_14()
+    elseif imminent_component == "Server_15" then
+        output_function_Server_15()
+        internal_transition_Server_15()
+    elseif imminent_component == "Server_16" then
+        output_function_Server_16()
+        internal_transition_Server_16()
+    elseif imminent_component == "Server_17" then
+        output_function_Server_17()
+        internal_transition_Server_17()
+    elseif imminent_component == "Server_18" then
+        output_function_Server_18()
+        internal_transition_Server_18()
+    elseif imminent_component == "Server_19" then
+        output_function_Server_19()
+        internal_transition_Server_19()
+    elseif imminent_component == "Server_20" then
+        output_function_Server_20()
+        internal_transition_Server_20()
+    elseif imminent_component == "Router" then
+        output_function_Router()
+        internal_transition_Router()
+    elseif imminent_component == "Sink" then
+        output_function_Sink()
+        internal_transition_Sink()
+    endif
+
+    // Phase 3: Route output to receivers (only if lambda produced output)
+    if output_value != "" then
+        route_output()
+    endif
+
+    // Phase 4: Rebuild event list with updated tn values
+    update_event_list()
+
+    // Phase 5: Check stopping condition
+    if sim_clocktime >= sim_end_time then
+        stopping_condition := true
+    endif
+endrule
+
+// ============================================================
+// Initialization Block
+// ============================================================
+
+init:
+    service_capacity := 5
+    iat_mean := 1.25
+    ist_mean := 1.0
+    feedback_prob := 0.5
+    sim_end_time := 10000.0
+
+    future_event_list := []
+    initialisation_routine()
+endinit
+
+// ============================================================
+// Main Rule
+// ============================================================
+
+main rule main =
+    if not stopping_condition then
+        simulator_step()
+    else
+        skip
+    endif
+endrule

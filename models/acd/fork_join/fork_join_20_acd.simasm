@@ -1,0 +1,2322 @@
+// =============================================================================
+// Activity Cycle Diagram (Fine-Grained) Model: fork_join_20_acd - SimASM
+// =============================================================================
+// Fork-Join 20-Queue using Activity Cycle Diagram - 20 parallel branches
+// Generated: 2026-02-28 13:38:01
+
+// Fine-grained step semantics for trace equivalence with Event Graph
+// One ASM step = start ONE activity OR execute ONE BTO event
+
+// =============================================================================
+// IMPORT LIBRARIES
+// =============================================================================
+
+import Random as rnd
+import Stdlib as lib
+
+// =============================================================================
+// DOMAIN DECLARATIONS
+// =============================================================================
+
+domain Object
+
+// Passive states (Queues)
+domain Queue <: Object
+
+// Active states (Activities)
+domain Activity <: Object
+
+// Tokens (entities)
+domain Token <: Object
+domain Job <: Token
+domain Resource <: Token
+
+// Bound-to-occur events
+domain BTOEvent <: Object
+
+// =============================================================================
+// QUEUE DECLARATIONS (Passive States)
+// =============================================================================
+
+const C: Queue  // Creator resource queue
+const Q_fork: Queue  // Pre-fork queue
+const Q_1: Queue  // Job waiting queue at branch 1
+const S_1: Queue  // Server resource queue at branch 1
+const P_1: Queue  // Part completion queue at branch 1
+const Q_2: Queue  // Job waiting queue at branch 2
+const S_2: Queue  // Server resource queue at branch 2
+const P_2: Queue  // Part completion queue at branch 2
+const Q_3: Queue  // Job waiting queue at branch 3
+const S_3: Queue  // Server resource queue at branch 3
+const P_3: Queue  // Part completion queue at branch 3
+const Q_4: Queue  // Job waiting queue at branch 4
+const S_4: Queue  // Server resource queue at branch 4
+const P_4: Queue  // Part completion queue at branch 4
+const Q_5: Queue  // Job waiting queue at branch 5
+const S_5: Queue  // Server resource queue at branch 5
+const P_5: Queue  // Part completion queue at branch 5
+const Q_6: Queue  // Job waiting queue at branch 6
+const S_6: Queue  // Server resource queue at branch 6
+const P_6: Queue  // Part completion queue at branch 6
+const Q_7: Queue  // Job waiting queue at branch 7
+const S_7: Queue  // Server resource queue at branch 7
+const P_7: Queue  // Part completion queue at branch 7
+const Q_8: Queue  // Job waiting queue at branch 8
+const S_8: Queue  // Server resource queue at branch 8
+const P_8: Queue  // Part completion queue at branch 8
+const Q_9: Queue  // Job waiting queue at branch 9
+const S_9: Queue  // Server resource queue at branch 9
+const P_9: Queue  // Part completion queue at branch 9
+const Q_10: Queue  // Job waiting queue at branch 10
+const S_10: Queue  // Server resource queue at branch 10
+const P_10: Queue  // Part completion queue at branch 10
+const Q_11: Queue  // Job waiting queue at branch 11
+const S_11: Queue  // Server resource queue at branch 11
+const P_11: Queue  // Part completion queue at branch 11
+const Q_12: Queue  // Job waiting queue at branch 12
+const S_12: Queue  // Server resource queue at branch 12
+const P_12: Queue  // Part completion queue at branch 12
+const Q_13: Queue  // Job waiting queue at branch 13
+const S_13: Queue  // Server resource queue at branch 13
+const P_13: Queue  // Part completion queue at branch 13
+const Q_14: Queue  // Job waiting queue at branch 14
+const S_14: Queue  // Server resource queue at branch 14
+const P_14: Queue  // Part completion queue at branch 14
+const Q_15: Queue  // Job waiting queue at branch 15
+const S_15: Queue  // Server resource queue at branch 15
+const P_15: Queue  // Part completion queue at branch 15
+const Q_16: Queue  // Job waiting queue at branch 16
+const S_16: Queue  // Server resource queue at branch 16
+const P_16: Queue  // Part completion queue at branch 16
+const Q_17: Queue  // Job waiting queue at branch 17
+const S_17: Queue  // Server resource queue at branch 17
+const P_17: Queue  // Part completion queue at branch 17
+const Q_18: Queue  // Job waiting queue at branch 18
+const S_18: Queue  // Server resource queue at branch 18
+const P_18: Queue  // Part completion queue at branch 18
+const Q_19: Queue  // Job waiting queue at branch 19
+const S_19: Queue  // Server resource queue at branch 19
+const P_19: Queue  // Part completion queue at branch 19
+const Q_20: Queue  // Job waiting queue at branch 20
+const S_20: Queue  // Server resource queue at branch 20
+const P_20: Queue  // Part completion queue at branch 20
+const Jobs: Queue  // Completed jobs (sink)
+
+// =============================================================================
+// ACTIVITY DECLARATIONS (Active States)
+// =============================================================================
+
+const Create: Activity  // Job creation activity
+const Fork: Activity  // Fork: distribute job to all branches
+const Serve_1: Activity  // Service activity at branch 1
+const Serve_2: Activity  // Service activity at branch 2
+const Serve_3: Activity  // Service activity at branch 3
+const Serve_4: Activity  // Service activity at branch 4
+const Serve_5: Activity  // Service activity at branch 5
+const Serve_6: Activity  // Service activity at branch 6
+const Serve_7: Activity  // Service activity at branch 7
+const Serve_8: Activity  // Service activity at branch 8
+const Serve_9: Activity  // Service activity at branch 9
+const Serve_10: Activity  // Service activity at branch 10
+const Serve_11: Activity  // Service activity at branch 11
+const Serve_12: Activity  // Service activity at branch 12
+const Serve_13: Activity  // Service activity at branch 13
+const Serve_14: Activity  // Service activity at branch 14
+const Serve_15: Activity  // Service activity at branch 15
+const Serve_16: Activity  // Service activity at branch 16
+const Serve_17: Activity  // Service activity at branch 17
+const Serve_18: Activity  // Service activity at branch 18
+const Serve_19: Activity  // Service activity at branch 19
+const Serve_20: Activity  // Service activity at branch 20
+const Join: Activity  // Join: synchronize all branches
+
+// =============================================================================
+// CONSTANT DECLARATIONS
+// =============================================================================
+
+const num_servers: Nat  // Number of servers per branch
+const iat_mean: Real  // Inter-arrival time mean
+const ist_mean: Real  // Service time mean per branch
+const sim_end_time: Real  // Simulation end time
+
+// =============================================================================
+// DYNAMIC VARIABLE DECLARATIONS
+// =============================================================================
+
+var future_event_list: List<BTOEvent>
+var sim_clocktime: Real
+var current_bto_event: BTOEvent
+
+// Phase control (fine-grained step semantics)
+var current_phase: String
+var activity_started: Bool
+
+// Additional state variables
+var job_id_counter: Nat
+var departure_count: Nat
+
+
+// =============================================================================
+// RANDOM STREAM VARIABLES
+// =============================================================================
+
+var duration_create: rnd.exponential(iat_mean) as "arrivals"
+var duration_fork: rnd.constant(0) as "fork"
+var duration_join: rnd.constant(0) as "join"
+var duration_serve_1: rnd.exponential(ist_mean) as "service_1"
+var duration_serve_2: rnd.exponential(ist_mean) as "service_2"
+var duration_serve_3: rnd.exponential(ist_mean) as "service_3"
+var duration_serve_4: rnd.exponential(ist_mean) as "service_4"
+var duration_serve_5: rnd.exponential(ist_mean) as "service_5"
+var duration_serve_6: rnd.exponential(ist_mean) as "service_6"
+var duration_serve_7: rnd.exponential(ist_mean) as "service_7"
+var duration_serve_8: rnd.exponential(ist_mean) as "service_8"
+var duration_serve_9: rnd.exponential(ist_mean) as "service_9"
+var duration_serve_10: rnd.exponential(ist_mean) as "service_10"
+var duration_serve_11: rnd.exponential(ist_mean) as "service_11"
+var duration_serve_12: rnd.exponential(ist_mean) as "service_12"
+var duration_serve_13: rnd.exponential(ist_mean) as "service_13"
+var duration_serve_14: rnd.exponential(ist_mean) as "service_14"
+var duration_serve_15: rnd.exponential(ist_mean) as "service_15"
+var duration_serve_16: rnd.exponential(ist_mean) as "service_16"
+var duration_serve_17: rnd.exponential(ist_mean) as "service_17"
+var duration_serve_18: rnd.exponential(ist_mean) as "service_18"
+var duration_serve_19: rnd.exponential(ist_mean) as "service_19"
+var duration_serve_20: rnd.exponential(ist_mean) as "service_20"
+
+// =============================================================================
+// STATIC FUNCTION DECLARATIONS
+// =============================================================================
+
+static function id(t: Token): Nat
+
+// =============================================================================
+// DYNAMIC FUNCTION DECLARATIONS
+// =============================================================================
+
+// Marking (token counts in queues)
+dynamic function marking(q: Queue): Nat
+dynamic function tokens(q: Queue): List<Token>
+
+// BTO-Event properties
+dynamic function bto_activity(e: BTOEvent): Activity
+dynamic function bto_scheduled_time(e: BTOEvent): Real
+dynamic function bto_tokens(e: BTOEvent): List<Token>
+
+// Job attributes
+dynamic function arrival_time(t: Job): Real
+dynamic function service_start_time_1(t: Job): Real
+dynamic function service_start_time_2(t: Job): Real
+dynamic function service_start_time_3(t: Job): Real
+dynamic function service_start_time_4(t: Job): Real
+dynamic function service_start_time_5(t: Job): Real
+dynamic function service_start_time_6(t: Job): Real
+dynamic function service_start_time_7(t: Job): Real
+dynamic function service_start_time_8(t: Job): Real
+dynamic function service_start_time_9(t: Job): Real
+dynamic function service_start_time_10(t: Job): Real
+dynamic function service_start_time_11(t: Job): Real
+dynamic function service_start_time_12(t: Job): Real
+dynamic function service_start_time_13(t: Job): Real
+dynamic function service_start_time_14(t: Job): Real
+dynamic function service_start_time_15(t: Job): Real
+dynamic function service_start_time_16(t: Job): Real
+dynamic function service_start_time_17(t: Job): Real
+dynamic function service_start_time_18(t: Job): Real
+dynamic function service_start_time_19(t: Job): Real
+dynamic function service_start_time_20(t: Job): Real
+
+
+// =============================================================================
+// OBSERVABLE STATE (Derived Functions)
+// =============================================================================
+
+derived function queue_count_1(): Nat =
+    marking(Q_1)
+
+derived function server_count_1(): Nat =
+    num_servers - marking(S_1)
+
+derived function queue_count_2(): Nat =
+    marking(Q_2)
+
+derived function server_count_2(): Nat =
+    num_servers - marking(S_2)
+
+derived function queue_count_3(): Nat =
+    marking(Q_3)
+
+derived function server_count_3(): Nat =
+    num_servers - marking(S_3)
+
+derived function queue_count_4(): Nat =
+    marking(Q_4)
+
+derived function server_count_4(): Nat =
+    num_servers - marking(S_4)
+
+derived function queue_count_5(): Nat =
+    marking(Q_5)
+
+derived function server_count_5(): Nat =
+    num_servers - marking(S_5)
+
+derived function queue_count_6(): Nat =
+    marking(Q_6)
+
+derived function server_count_6(): Nat =
+    num_servers - marking(S_6)
+
+derived function queue_count_7(): Nat =
+    marking(Q_7)
+
+derived function server_count_7(): Nat =
+    num_servers - marking(S_7)
+
+derived function queue_count_8(): Nat =
+    marking(Q_8)
+
+derived function server_count_8(): Nat =
+    num_servers - marking(S_8)
+
+derived function queue_count_9(): Nat =
+    marking(Q_9)
+
+derived function server_count_9(): Nat =
+    num_servers - marking(S_9)
+
+derived function queue_count_10(): Nat =
+    marking(Q_10)
+
+derived function server_count_10(): Nat =
+    num_servers - marking(S_10)
+
+derived function queue_count_11(): Nat =
+    marking(Q_11)
+
+derived function server_count_11(): Nat =
+    num_servers - marking(S_11)
+
+derived function queue_count_12(): Nat =
+    marking(Q_12)
+
+derived function server_count_12(): Nat =
+    num_servers - marking(S_12)
+
+derived function queue_count_13(): Nat =
+    marking(Q_13)
+
+derived function server_count_13(): Nat =
+    num_servers - marking(S_13)
+
+derived function queue_count_14(): Nat =
+    marking(Q_14)
+
+derived function server_count_14(): Nat =
+    num_servers - marking(S_14)
+
+derived function queue_count_15(): Nat =
+    marking(Q_15)
+
+derived function server_count_15(): Nat =
+    num_servers - marking(S_15)
+
+derived function queue_count_16(): Nat =
+    marking(Q_16)
+
+derived function server_count_16(): Nat =
+    num_servers - marking(S_16)
+
+derived function queue_count_17(): Nat =
+    marking(Q_17)
+
+derived function server_count_17(): Nat =
+    num_servers - marking(S_17)
+
+derived function queue_count_18(): Nat =
+    marking(Q_18)
+
+derived function server_count_18(): Nat =
+    num_servers - marking(S_18)
+
+derived function queue_count_19(): Nat =
+    marking(Q_19)
+
+derived function server_count_19(): Nat =
+    num_servers - marking(S_19)
+
+derived function queue_count_20(): Nat =
+    marking(Q_20)
+
+derived function server_count_20(): Nat =
+    num_servers - marking(S_20)
+
+derived function part_1_num(): Bool =
+    marking(P_1)
+
+derived function part_2_num(): Bool =
+    marking(P_2)
+
+derived function part_3_num(): Bool =
+    marking(P_3)
+
+derived function part_4_num(): Bool =
+    marking(P_4)
+
+derived function part_5_num(): Bool =
+    marking(P_5)
+
+derived function part_6_num(): Bool =
+    marking(P_6)
+
+derived function part_7_num(): Bool =
+    marking(P_7)
+
+derived function part_8_num(): Bool =
+    marking(P_8)
+
+derived function part_9_num(): Bool =
+    marking(P_9)
+
+derived function part_10_num(): Bool =
+    marking(P_10)
+
+derived function part_11_num(): Bool =
+    marking(P_11)
+
+derived function part_12_num(): Bool =
+    marking(P_12)
+
+derived function part_13_num(): Bool =
+    marking(P_13)
+
+derived function part_14_num(): Bool =
+    marking(P_14)
+
+derived function part_15_num(): Bool =
+    marking(P_15)
+
+derived function part_16_num(): Bool =
+    marking(P_16)
+
+derived function part_17_num(): Bool =
+    marking(P_17)
+
+derived function part_18_num(): Bool =
+    marking(P_18)
+
+derived function part_19_num(): Bool =
+    marking(P_19)
+
+derived function part_20_num(): Bool =
+    marking(P_20)
+
+derived function in_system(): Nat =
+    marking(Q_1) + (num_servers - marking(S_1)) + marking(P_1) + marking(Q_2) + (num_servers - marking(S_2)) + marking(P_2) + marking(Q_3) + (num_servers - marking(S_3)) + marking(P_3) + marking(Q_4) + (num_servers - marking(S_4)) + marking(P_4) + marking(Q_5) + (num_servers - marking(S_5)) + marking(P_5) + marking(Q_6) + (num_servers - marking(S_6)) + marking(P_6) + marking(Q_7) + (num_servers - marking(S_7)) + marking(P_7) + marking(Q_8) + (num_servers - marking(S_8)) + marking(P_8) + marking(Q_9) + (num_servers - marking(S_9)) + marking(P_9) + marking(Q_10) + (num_servers - marking(S_10)) + marking(P_10) + marking(Q_11) + (num_servers - marking(S_11)) + marking(P_11) + marking(Q_12) + (num_servers - marking(S_12)) + marking(P_12) + marking(Q_13) + (num_servers - marking(S_13)) + marking(P_13) + marking(Q_14) + (num_servers - marking(S_14)) + marking(P_14) + marking(Q_15) + (num_servers - marking(S_15)) + marking(P_15) + marking(Q_16) + (num_servers - marking(S_16)) + marking(P_16) + marking(Q_17) + (num_servers - marking(S_17)) + marking(P_17) + marking(Q_18) + (num_servers - marking(S_18)) + marking(P_18) + marking(Q_19) + (num_servers - marking(S_19)) + marking(P_19) + marking(Q_20) + (num_servers - marking(S_20)) + marking(P_20)
+
+// At-begin conditions (activity enabling)
+derived function at_begin_condition_join(): Bool =
+    marking(P_1) >= 1 and marking(P_2) >= 1 and marking(P_3) >= 1 and marking(P_4) >= 1 and marking(P_5) >= 1 and marking(P_6) >= 1 and marking(P_7) >= 1 and marking(P_8) >= 1 and marking(P_9) >= 1 and marking(P_10) >= 1 and marking(P_11) >= 1 and marking(P_12) >= 1 and marking(P_13) >= 1 and marking(P_14) >= 1 and marking(P_15) >= 1 and marking(P_16) >= 1 and marking(P_17) >= 1 and marking(P_18) >= 1 and marking(P_19) >= 1 and marking(P_20) >= 1
+derived function at_begin_condition_serve_1(): Bool =
+    marking(S_1) >= 1 and marking(Q_1) >= 1
+derived function at_begin_condition_serve_2(): Bool =
+    marking(S_2) >= 1 and marking(Q_2) >= 1
+derived function at_begin_condition_serve_3(): Bool =
+    marking(S_3) >= 1 and marking(Q_3) >= 1
+derived function at_begin_condition_serve_4(): Bool =
+    marking(S_4) >= 1 and marking(Q_4) >= 1
+derived function at_begin_condition_serve_5(): Bool =
+    marking(S_5) >= 1 and marking(Q_5) >= 1
+derived function at_begin_condition_serve_6(): Bool =
+    marking(S_6) >= 1 and marking(Q_6) >= 1
+derived function at_begin_condition_serve_7(): Bool =
+    marking(S_7) >= 1 and marking(Q_7) >= 1
+derived function at_begin_condition_serve_8(): Bool =
+    marking(S_8) >= 1 and marking(Q_8) >= 1
+derived function at_begin_condition_serve_9(): Bool =
+    marking(S_9) >= 1 and marking(Q_9) >= 1
+derived function at_begin_condition_serve_10(): Bool =
+    marking(S_10) >= 1 and marking(Q_10) >= 1
+derived function at_begin_condition_serve_11(): Bool =
+    marking(S_11) >= 1 and marking(Q_11) >= 1
+derived function at_begin_condition_serve_12(): Bool =
+    marking(S_12) >= 1 and marking(Q_12) >= 1
+derived function at_begin_condition_serve_13(): Bool =
+    marking(S_13) >= 1 and marking(Q_13) >= 1
+derived function at_begin_condition_serve_14(): Bool =
+    marking(S_14) >= 1 and marking(Q_14) >= 1
+derived function at_begin_condition_serve_15(): Bool =
+    marking(S_15) >= 1 and marking(Q_15) >= 1
+derived function at_begin_condition_serve_16(): Bool =
+    marking(S_16) >= 1 and marking(Q_16) >= 1
+derived function at_begin_condition_serve_17(): Bool =
+    marking(S_17) >= 1 and marking(Q_17) >= 1
+derived function at_begin_condition_serve_18(): Bool =
+    marking(S_18) >= 1 and marking(Q_18) >= 1
+derived function at_begin_condition_serve_19(): Bool =
+    marking(S_19) >= 1 and marking(Q_19) >= 1
+derived function at_begin_condition_serve_20(): Bool =
+    marking(S_20) >= 1 and marking(Q_20) >= 1
+derived function at_begin_condition_fork(): Bool =
+    marking(Q_fork) >= 1
+derived function at_begin_condition_create(): Bool =
+    marking(C) >= 1
+
+// =============================================================================
+// RULES (ACD Phases)
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// Phase 0: Initialization
+// -----------------------------------------------------------------------------
+
+rule initialisation_routine() =
+    // Initialize C with 1 tokens
+    tokens(C) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(C), token_0)
+
+    // Initialize S_1 with 5 tokens
+    tokens(S_1) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(S_1), token_0)
+    let token_1 = new Resource
+    id(token_1) := 2
+    lib.add(tokens(S_1), token_1)
+    let token_2 = new Resource
+    id(token_2) := 3
+    lib.add(tokens(S_1), token_2)
+    let token_3 = new Resource
+    id(token_3) := 4
+    lib.add(tokens(S_1), token_3)
+    let token_4 = new Resource
+    id(token_4) := 5
+    lib.add(tokens(S_1), token_4)
+
+    // Initialize S_2 with 5 tokens
+    tokens(S_2) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(S_2), token_0)
+    let token_1 = new Resource
+    id(token_1) := 2
+    lib.add(tokens(S_2), token_1)
+    let token_2 = new Resource
+    id(token_2) := 3
+    lib.add(tokens(S_2), token_2)
+    let token_3 = new Resource
+    id(token_3) := 4
+    lib.add(tokens(S_2), token_3)
+    let token_4 = new Resource
+    id(token_4) := 5
+    lib.add(tokens(S_2), token_4)
+
+    // Initialize S_3 with 5 tokens
+    tokens(S_3) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(S_3), token_0)
+    let token_1 = new Resource
+    id(token_1) := 2
+    lib.add(tokens(S_3), token_1)
+    let token_2 = new Resource
+    id(token_2) := 3
+    lib.add(tokens(S_3), token_2)
+    let token_3 = new Resource
+    id(token_3) := 4
+    lib.add(tokens(S_3), token_3)
+    let token_4 = new Resource
+    id(token_4) := 5
+    lib.add(tokens(S_3), token_4)
+
+    // Initialize S_4 with 5 tokens
+    tokens(S_4) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(S_4), token_0)
+    let token_1 = new Resource
+    id(token_1) := 2
+    lib.add(tokens(S_4), token_1)
+    let token_2 = new Resource
+    id(token_2) := 3
+    lib.add(tokens(S_4), token_2)
+    let token_3 = new Resource
+    id(token_3) := 4
+    lib.add(tokens(S_4), token_3)
+    let token_4 = new Resource
+    id(token_4) := 5
+    lib.add(tokens(S_4), token_4)
+
+    // Initialize S_5 with 5 tokens
+    tokens(S_5) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(S_5), token_0)
+    let token_1 = new Resource
+    id(token_1) := 2
+    lib.add(tokens(S_5), token_1)
+    let token_2 = new Resource
+    id(token_2) := 3
+    lib.add(tokens(S_5), token_2)
+    let token_3 = new Resource
+    id(token_3) := 4
+    lib.add(tokens(S_5), token_3)
+    let token_4 = new Resource
+    id(token_4) := 5
+    lib.add(tokens(S_5), token_4)
+
+    // Initialize S_6 with 5 tokens
+    tokens(S_6) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(S_6), token_0)
+    let token_1 = new Resource
+    id(token_1) := 2
+    lib.add(tokens(S_6), token_1)
+    let token_2 = new Resource
+    id(token_2) := 3
+    lib.add(tokens(S_6), token_2)
+    let token_3 = new Resource
+    id(token_3) := 4
+    lib.add(tokens(S_6), token_3)
+    let token_4 = new Resource
+    id(token_4) := 5
+    lib.add(tokens(S_6), token_4)
+
+    // Initialize S_7 with 5 tokens
+    tokens(S_7) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(S_7), token_0)
+    let token_1 = new Resource
+    id(token_1) := 2
+    lib.add(tokens(S_7), token_1)
+    let token_2 = new Resource
+    id(token_2) := 3
+    lib.add(tokens(S_7), token_2)
+    let token_3 = new Resource
+    id(token_3) := 4
+    lib.add(tokens(S_7), token_3)
+    let token_4 = new Resource
+    id(token_4) := 5
+    lib.add(tokens(S_7), token_4)
+
+    // Initialize S_8 with 5 tokens
+    tokens(S_8) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(S_8), token_0)
+    let token_1 = new Resource
+    id(token_1) := 2
+    lib.add(tokens(S_8), token_1)
+    let token_2 = new Resource
+    id(token_2) := 3
+    lib.add(tokens(S_8), token_2)
+    let token_3 = new Resource
+    id(token_3) := 4
+    lib.add(tokens(S_8), token_3)
+    let token_4 = new Resource
+    id(token_4) := 5
+    lib.add(tokens(S_8), token_4)
+
+    // Initialize S_9 with 5 tokens
+    tokens(S_9) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(S_9), token_0)
+    let token_1 = new Resource
+    id(token_1) := 2
+    lib.add(tokens(S_9), token_1)
+    let token_2 = new Resource
+    id(token_2) := 3
+    lib.add(tokens(S_9), token_2)
+    let token_3 = new Resource
+    id(token_3) := 4
+    lib.add(tokens(S_9), token_3)
+    let token_4 = new Resource
+    id(token_4) := 5
+    lib.add(tokens(S_9), token_4)
+
+    // Initialize S_10 with 5 tokens
+    tokens(S_10) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(S_10), token_0)
+    let token_1 = new Resource
+    id(token_1) := 2
+    lib.add(tokens(S_10), token_1)
+    let token_2 = new Resource
+    id(token_2) := 3
+    lib.add(tokens(S_10), token_2)
+    let token_3 = new Resource
+    id(token_3) := 4
+    lib.add(tokens(S_10), token_3)
+    let token_4 = new Resource
+    id(token_4) := 5
+    lib.add(tokens(S_10), token_4)
+
+    // Initialize S_11 with 5 tokens
+    tokens(S_11) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(S_11), token_0)
+    let token_1 = new Resource
+    id(token_1) := 2
+    lib.add(tokens(S_11), token_1)
+    let token_2 = new Resource
+    id(token_2) := 3
+    lib.add(tokens(S_11), token_2)
+    let token_3 = new Resource
+    id(token_3) := 4
+    lib.add(tokens(S_11), token_3)
+    let token_4 = new Resource
+    id(token_4) := 5
+    lib.add(tokens(S_11), token_4)
+
+    // Initialize S_12 with 5 tokens
+    tokens(S_12) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(S_12), token_0)
+    let token_1 = new Resource
+    id(token_1) := 2
+    lib.add(tokens(S_12), token_1)
+    let token_2 = new Resource
+    id(token_2) := 3
+    lib.add(tokens(S_12), token_2)
+    let token_3 = new Resource
+    id(token_3) := 4
+    lib.add(tokens(S_12), token_3)
+    let token_4 = new Resource
+    id(token_4) := 5
+    lib.add(tokens(S_12), token_4)
+
+    // Initialize S_13 with 5 tokens
+    tokens(S_13) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(S_13), token_0)
+    let token_1 = new Resource
+    id(token_1) := 2
+    lib.add(tokens(S_13), token_1)
+    let token_2 = new Resource
+    id(token_2) := 3
+    lib.add(tokens(S_13), token_2)
+    let token_3 = new Resource
+    id(token_3) := 4
+    lib.add(tokens(S_13), token_3)
+    let token_4 = new Resource
+    id(token_4) := 5
+    lib.add(tokens(S_13), token_4)
+
+    // Initialize S_14 with 5 tokens
+    tokens(S_14) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(S_14), token_0)
+    let token_1 = new Resource
+    id(token_1) := 2
+    lib.add(tokens(S_14), token_1)
+    let token_2 = new Resource
+    id(token_2) := 3
+    lib.add(tokens(S_14), token_2)
+    let token_3 = new Resource
+    id(token_3) := 4
+    lib.add(tokens(S_14), token_3)
+    let token_4 = new Resource
+    id(token_4) := 5
+    lib.add(tokens(S_14), token_4)
+
+    // Initialize S_15 with 5 tokens
+    tokens(S_15) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(S_15), token_0)
+    let token_1 = new Resource
+    id(token_1) := 2
+    lib.add(tokens(S_15), token_1)
+    let token_2 = new Resource
+    id(token_2) := 3
+    lib.add(tokens(S_15), token_2)
+    let token_3 = new Resource
+    id(token_3) := 4
+    lib.add(tokens(S_15), token_3)
+    let token_4 = new Resource
+    id(token_4) := 5
+    lib.add(tokens(S_15), token_4)
+
+    // Initialize S_16 with 5 tokens
+    tokens(S_16) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(S_16), token_0)
+    let token_1 = new Resource
+    id(token_1) := 2
+    lib.add(tokens(S_16), token_1)
+    let token_2 = new Resource
+    id(token_2) := 3
+    lib.add(tokens(S_16), token_2)
+    let token_3 = new Resource
+    id(token_3) := 4
+    lib.add(tokens(S_16), token_3)
+    let token_4 = new Resource
+    id(token_4) := 5
+    lib.add(tokens(S_16), token_4)
+
+    // Initialize S_17 with 5 tokens
+    tokens(S_17) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(S_17), token_0)
+    let token_1 = new Resource
+    id(token_1) := 2
+    lib.add(tokens(S_17), token_1)
+    let token_2 = new Resource
+    id(token_2) := 3
+    lib.add(tokens(S_17), token_2)
+    let token_3 = new Resource
+    id(token_3) := 4
+    lib.add(tokens(S_17), token_3)
+    let token_4 = new Resource
+    id(token_4) := 5
+    lib.add(tokens(S_17), token_4)
+
+    // Initialize S_18 with 5 tokens
+    tokens(S_18) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(S_18), token_0)
+    let token_1 = new Resource
+    id(token_1) := 2
+    lib.add(tokens(S_18), token_1)
+    let token_2 = new Resource
+    id(token_2) := 3
+    lib.add(tokens(S_18), token_2)
+    let token_3 = new Resource
+    id(token_3) := 4
+    lib.add(tokens(S_18), token_3)
+    let token_4 = new Resource
+    id(token_4) := 5
+    lib.add(tokens(S_18), token_4)
+
+    // Initialize S_19 with 5 tokens
+    tokens(S_19) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(S_19), token_0)
+    let token_1 = new Resource
+    id(token_1) := 2
+    lib.add(tokens(S_19), token_1)
+    let token_2 = new Resource
+    id(token_2) := 3
+    lib.add(tokens(S_19), token_2)
+    let token_3 = new Resource
+    id(token_3) := 4
+    lib.add(tokens(S_19), token_3)
+    let token_4 = new Resource
+    id(token_4) := 5
+    lib.add(tokens(S_19), token_4)
+
+    // Initialize S_20 with 5 tokens
+    tokens(S_20) := []
+    let token_0 = new Resource
+    id(token_0) := 1
+    lib.add(tokens(S_20), token_0)
+    let token_1 = new Resource
+    id(token_1) := 2
+    lib.add(tokens(S_20), token_1)
+    let token_2 = new Resource
+    id(token_2) := 3
+    lib.add(tokens(S_20), token_2)
+    let token_3 = new Resource
+    id(token_3) := 4
+    lib.add(tokens(S_20), token_3)
+    let token_4 = new Resource
+    id(token_4) := 5
+    lib.add(tokens(S_20), token_4)
+
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Create
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_create() =
+    // Consume from C
+    marking(C) := marking(C) - 1
+    let creator_token = lib.pop(tokens(C))
+
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Create
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_create
+    bto_tokens(bto_event) := [creator_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Fork
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_fork() =
+    // Consume from Q_fork
+    marking(Q_fork) := marking(Q_fork) - 1
+    let fork_token = lib.pop(tokens(Q_fork))
+
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Fork
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_fork
+    bto_tokens(bto_event) := [fork_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Serve_1
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_serve_1() =
+    // Consume from S_1
+    marking(S_1) := marking(S_1) - 1
+    let server_token = lib.pop(tokens(S_1))
+    // Consume from Q_1
+    marking(Q_1) := marking(Q_1) - 1
+    let job_token = lib.pop(tokens(Q_1))
+
+    service_start_time_1(job_token) := sim_clocktime
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Serve_1
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_serve_1
+    bto_tokens(bto_event) := [server_token, job_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Serve_2
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_serve_2() =
+    // Consume from S_2
+    marking(S_2) := marking(S_2) - 1
+    let server_token = lib.pop(tokens(S_2))
+    // Consume from Q_2
+    marking(Q_2) := marking(Q_2) - 1
+    let job_token = lib.pop(tokens(Q_2))
+
+    service_start_time_2(job_token) := sim_clocktime
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Serve_2
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_serve_2
+    bto_tokens(bto_event) := [server_token, job_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Serve_3
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_serve_3() =
+    // Consume from S_3
+    marking(S_3) := marking(S_3) - 1
+    let server_token = lib.pop(tokens(S_3))
+    // Consume from Q_3
+    marking(Q_3) := marking(Q_3) - 1
+    let job_token = lib.pop(tokens(Q_3))
+
+    service_start_time_3(job_token) := sim_clocktime
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Serve_3
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_serve_3
+    bto_tokens(bto_event) := [server_token, job_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Serve_4
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_serve_4() =
+    // Consume from S_4
+    marking(S_4) := marking(S_4) - 1
+    let server_token = lib.pop(tokens(S_4))
+    // Consume from Q_4
+    marking(Q_4) := marking(Q_4) - 1
+    let job_token = lib.pop(tokens(Q_4))
+
+    service_start_time_4(job_token) := sim_clocktime
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Serve_4
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_serve_4
+    bto_tokens(bto_event) := [server_token, job_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Serve_5
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_serve_5() =
+    // Consume from S_5
+    marking(S_5) := marking(S_5) - 1
+    let server_token = lib.pop(tokens(S_5))
+    // Consume from Q_5
+    marking(Q_5) := marking(Q_5) - 1
+    let job_token = lib.pop(tokens(Q_5))
+
+    service_start_time_5(job_token) := sim_clocktime
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Serve_5
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_serve_5
+    bto_tokens(bto_event) := [server_token, job_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Serve_6
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_serve_6() =
+    // Consume from S_6
+    marking(S_6) := marking(S_6) - 1
+    let server_token = lib.pop(tokens(S_6))
+    // Consume from Q_6
+    marking(Q_6) := marking(Q_6) - 1
+    let job_token = lib.pop(tokens(Q_6))
+
+    service_start_time_6(job_token) := sim_clocktime
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Serve_6
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_serve_6
+    bto_tokens(bto_event) := [server_token, job_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Serve_7
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_serve_7() =
+    // Consume from S_7
+    marking(S_7) := marking(S_7) - 1
+    let server_token = lib.pop(tokens(S_7))
+    // Consume from Q_7
+    marking(Q_7) := marking(Q_7) - 1
+    let job_token = lib.pop(tokens(Q_7))
+
+    service_start_time_7(job_token) := sim_clocktime
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Serve_7
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_serve_7
+    bto_tokens(bto_event) := [server_token, job_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Serve_8
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_serve_8() =
+    // Consume from S_8
+    marking(S_8) := marking(S_8) - 1
+    let server_token = lib.pop(tokens(S_8))
+    // Consume from Q_8
+    marking(Q_8) := marking(Q_8) - 1
+    let job_token = lib.pop(tokens(Q_8))
+
+    service_start_time_8(job_token) := sim_clocktime
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Serve_8
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_serve_8
+    bto_tokens(bto_event) := [server_token, job_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Serve_9
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_serve_9() =
+    // Consume from S_9
+    marking(S_9) := marking(S_9) - 1
+    let server_token = lib.pop(tokens(S_9))
+    // Consume from Q_9
+    marking(Q_9) := marking(Q_9) - 1
+    let job_token = lib.pop(tokens(Q_9))
+
+    service_start_time_9(job_token) := sim_clocktime
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Serve_9
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_serve_9
+    bto_tokens(bto_event) := [server_token, job_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Serve_10
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_serve_10() =
+    // Consume from S_10
+    marking(S_10) := marking(S_10) - 1
+    let server_token = lib.pop(tokens(S_10))
+    // Consume from Q_10
+    marking(Q_10) := marking(Q_10) - 1
+    let job_token = lib.pop(tokens(Q_10))
+
+    service_start_time_10(job_token) := sim_clocktime
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Serve_10
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_serve_10
+    bto_tokens(bto_event) := [server_token, job_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Serve_11
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_serve_11() =
+    // Consume from S_11
+    marking(S_11) := marking(S_11) - 1
+    let server_token = lib.pop(tokens(S_11))
+    // Consume from Q_11
+    marking(Q_11) := marking(Q_11) - 1
+    let job_token = lib.pop(tokens(Q_11))
+
+    service_start_time_11(job_token) := sim_clocktime
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Serve_11
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_serve_11
+    bto_tokens(bto_event) := [server_token, job_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Serve_12
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_serve_12() =
+    // Consume from S_12
+    marking(S_12) := marking(S_12) - 1
+    let server_token = lib.pop(tokens(S_12))
+    // Consume from Q_12
+    marking(Q_12) := marking(Q_12) - 1
+    let job_token = lib.pop(tokens(Q_12))
+
+    service_start_time_12(job_token) := sim_clocktime
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Serve_12
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_serve_12
+    bto_tokens(bto_event) := [server_token, job_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Serve_13
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_serve_13() =
+    // Consume from S_13
+    marking(S_13) := marking(S_13) - 1
+    let server_token = lib.pop(tokens(S_13))
+    // Consume from Q_13
+    marking(Q_13) := marking(Q_13) - 1
+    let job_token = lib.pop(tokens(Q_13))
+
+    service_start_time_13(job_token) := sim_clocktime
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Serve_13
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_serve_13
+    bto_tokens(bto_event) := [server_token, job_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Serve_14
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_serve_14() =
+    // Consume from S_14
+    marking(S_14) := marking(S_14) - 1
+    let server_token = lib.pop(tokens(S_14))
+    // Consume from Q_14
+    marking(Q_14) := marking(Q_14) - 1
+    let job_token = lib.pop(tokens(Q_14))
+
+    service_start_time_14(job_token) := sim_clocktime
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Serve_14
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_serve_14
+    bto_tokens(bto_event) := [server_token, job_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Serve_15
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_serve_15() =
+    // Consume from S_15
+    marking(S_15) := marking(S_15) - 1
+    let server_token = lib.pop(tokens(S_15))
+    // Consume from Q_15
+    marking(Q_15) := marking(Q_15) - 1
+    let job_token = lib.pop(tokens(Q_15))
+
+    service_start_time_15(job_token) := sim_clocktime
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Serve_15
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_serve_15
+    bto_tokens(bto_event) := [server_token, job_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Serve_16
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_serve_16() =
+    // Consume from S_16
+    marking(S_16) := marking(S_16) - 1
+    let server_token = lib.pop(tokens(S_16))
+    // Consume from Q_16
+    marking(Q_16) := marking(Q_16) - 1
+    let job_token = lib.pop(tokens(Q_16))
+
+    service_start_time_16(job_token) := sim_clocktime
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Serve_16
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_serve_16
+    bto_tokens(bto_event) := [server_token, job_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Serve_17
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_serve_17() =
+    // Consume from S_17
+    marking(S_17) := marking(S_17) - 1
+    let server_token = lib.pop(tokens(S_17))
+    // Consume from Q_17
+    marking(Q_17) := marking(Q_17) - 1
+    let job_token = lib.pop(tokens(Q_17))
+
+    service_start_time_17(job_token) := sim_clocktime
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Serve_17
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_serve_17
+    bto_tokens(bto_event) := [server_token, job_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Serve_18
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_serve_18() =
+    // Consume from S_18
+    marking(S_18) := marking(S_18) - 1
+    let server_token = lib.pop(tokens(S_18))
+    // Consume from Q_18
+    marking(Q_18) := marking(Q_18) - 1
+    let job_token = lib.pop(tokens(Q_18))
+
+    service_start_time_18(job_token) := sim_clocktime
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Serve_18
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_serve_18
+    bto_tokens(bto_event) := [server_token, job_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Serve_19
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_serve_19() =
+    // Consume from S_19
+    marking(S_19) := marking(S_19) - 1
+    let server_token = lib.pop(tokens(S_19))
+    // Consume from Q_19
+    marking(Q_19) := marking(Q_19) - 1
+    let job_token = lib.pop(tokens(Q_19))
+
+    service_start_time_19(job_token) := sim_clocktime
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Serve_19
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_serve_19
+    bto_tokens(bto_event) := [server_token, job_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Serve_20
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_serve_20() =
+    // Consume from S_20
+    marking(S_20) := marking(S_20) - 1
+    let server_token = lib.pop(tokens(S_20))
+    // Consume from Q_20
+    marking(Q_20) := marking(Q_20) - 1
+    let job_token = lib.pop(tokens(Q_20))
+
+    service_start_time_20(job_token) := sim_clocktime
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Serve_20
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_serve_20
+    bto_tokens(bto_event) := [server_token, job_token]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-begin: Join
+// -----------------------------------------------------------------------------
+
+rule at_begin_action_join() =
+    // Consume from P_1
+    marking(P_1) := marking(P_1) - 1
+    let part_token_1 = lib.pop(tokens(P_1))
+    // Consume from P_2
+    marking(P_2) := marking(P_2) - 1
+    let part_token_2 = lib.pop(tokens(P_2))
+    // Consume from P_3
+    marking(P_3) := marking(P_3) - 1
+    let part_token_3 = lib.pop(tokens(P_3))
+    // Consume from P_4
+    marking(P_4) := marking(P_4) - 1
+    let part_token_4 = lib.pop(tokens(P_4))
+    // Consume from P_5
+    marking(P_5) := marking(P_5) - 1
+    let part_token_5 = lib.pop(tokens(P_5))
+    // Consume from P_6
+    marking(P_6) := marking(P_6) - 1
+    let part_token_6 = lib.pop(tokens(P_6))
+    // Consume from P_7
+    marking(P_7) := marking(P_7) - 1
+    let part_token_7 = lib.pop(tokens(P_7))
+    // Consume from P_8
+    marking(P_8) := marking(P_8) - 1
+    let part_token_8 = lib.pop(tokens(P_8))
+    // Consume from P_9
+    marking(P_9) := marking(P_9) - 1
+    let part_token_9 = lib.pop(tokens(P_9))
+    // Consume from P_10
+    marking(P_10) := marking(P_10) - 1
+    let part_token_10 = lib.pop(tokens(P_10))
+    // Consume from P_11
+    marking(P_11) := marking(P_11) - 1
+    let part_token_11 = lib.pop(tokens(P_11))
+    // Consume from P_12
+    marking(P_12) := marking(P_12) - 1
+    let part_token_12 = lib.pop(tokens(P_12))
+    // Consume from P_13
+    marking(P_13) := marking(P_13) - 1
+    let part_token_13 = lib.pop(tokens(P_13))
+    // Consume from P_14
+    marking(P_14) := marking(P_14) - 1
+    let part_token_14 = lib.pop(tokens(P_14))
+    // Consume from P_15
+    marking(P_15) := marking(P_15) - 1
+    let part_token_15 = lib.pop(tokens(P_15))
+    // Consume from P_16
+    marking(P_16) := marking(P_16) - 1
+    let part_token_16 = lib.pop(tokens(P_16))
+    // Consume from P_17
+    marking(P_17) := marking(P_17) - 1
+    let part_token_17 = lib.pop(tokens(P_17))
+    // Consume from P_18
+    marking(P_18) := marking(P_18) - 1
+    let part_token_18 = lib.pop(tokens(P_18))
+    // Consume from P_19
+    marking(P_19) := marking(P_19) - 1
+    let part_token_19 = lib.pop(tokens(P_19))
+    // Consume from P_20
+    marking(P_20) := marking(P_20) - 1
+    let part_token_20 = lib.pop(tokens(P_20))
+
+    // Schedule BTO-event
+    let bto_event = new BTOEvent
+    bto_activity(bto_event) := Join
+    bto_scheduled_time(bto_event) := sim_clocktime + duration_join
+    bto_tokens(bto_event) := [part_token_1, part_token_2, part_token_3, part_token_4, part_token_5, part_token_6, part_token_7, part_token_8, part_token_9, part_token_10, part_token_11, part_token_12, part_token_13, part_token_14, part_token_15, part_token_16, part_token_17, part_token_18, part_token_19, part_token_20]
+    lib.add(future_event_list, bto_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Create
+// -----------------------------------------------------------------------------
+
+rule at_end_action_create(bound_tokens: List<Token>) =
+    // Produce to C
+    let creator_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(C), creator_token)
+    marking(C) := marking(C) + 1
+    // Produce to Q_fork
+    let new_token_0 = new Job
+    lib.add(tokens(Q_fork), new_token_0)
+    marking(Q_fork) := marking(Q_fork) + 1
+    job_id_counter := job_id_counter + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Fork
+// -----------------------------------------------------------------------------
+
+rule at_end_action_fork(bound_tokens: List<Token>) =
+    // Produce to Q_1
+    let new_token_0 = new Job
+    lib.add(tokens(Q_1), new_token_0)
+    marking(Q_1) := marking(Q_1) + 1
+    // Produce to Q_2
+    let new_token_1 = new Job
+    lib.add(tokens(Q_2), new_token_1)
+    marking(Q_2) := marking(Q_2) + 1
+    // Produce to Q_3
+    let new_token_2 = new Job
+    lib.add(tokens(Q_3), new_token_2)
+    marking(Q_3) := marking(Q_3) + 1
+    // Produce to Q_4
+    let new_token_3 = new Job
+    lib.add(tokens(Q_4), new_token_3)
+    marking(Q_4) := marking(Q_4) + 1
+    // Produce to Q_5
+    let new_token_4 = new Job
+    lib.add(tokens(Q_5), new_token_4)
+    marking(Q_5) := marking(Q_5) + 1
+    // Produce to Q_6
+    let new_token_5 = new Job
+    lib.add(tokens(Q_6), new_token_5)
+    marking(Q_6) := marking(Q_6) + 1
+    // Produce to Q_7
+    let new_token_6 = new Job
+    lib.add(tokens(Q_7), new_token_6)
+    marking(Q_7) := marking(Q_7) + 1
+    // Produce to Q_8
+    let new_token_7 = new Job
+    lib.add(tokens(Q_8), new_token_7)
+    marking(Q_8) := marking(Q_8) + 1
+    // Produce to Q_9
+    let new_token_8 = new Job
+    lib.add(tokens(Q_9), new_token_8)
+    marking(Q_9) := marking(Q_9) + 1
+    // Produce to Q_10
+    let new_token_9 = new Job
+    lib.add(tokens(Q_10), new_token_9)
+    marking(Q_10) := marking(Q_10) + 1
+    // Produce to Q_11
+    let new_token_10 = new Job
+    lib.add(tokens(Q_11), new_token_10)
+    marking(Q_11) := marking(Q_11) + 1
+    // Produce to Q_12
+    let new_token_11 = new Job
+    lib.add(tokens(Q_12), new_token_11)
+    marking(Q_12) := marking(Q_12) + 1
+    // Produce to Q_13
+    let new_token_12 = new Job
+    lib.add(tokens(Q_13), new_token_12)
+    marking(Q_13) := marking(Q_13) + 1
+    // Produce to Q_14
+    let new_token_13 = new Job
+    lib.add(tokens(Q_14), new_token_13)
+    marking(Q_14) := marking(Q_14) + 1
+    // Produce to Q_15
+    let new_token_14 = new Job
+    lib.add(tokens(Q_15), new_token_14)
+    marking(Q_15) := marking(Q_15) + 1
+    // Produce to Q_16
+    let new_token_15 = new Job
+    lib.add(tokens(Q_16), new_token_15)
+    marking(Q_16) := marking(Q_16) + 1
+    // Produce to Q_17
+    let new_token_16 = new Job
+    lib.add(tokens(Q_17), new_token_16)
+    marking(Q_17) := marking(Q_17) + 1
+    // Produce to Q_18
+    let new_token_17 = new Job
+    lib.add(tokens(Q_18), new_token_17)
+    marking(Q_18) := marking(Q_18) + 1
+    // Produce to Q_19
+    let new_token_18 = new Job
+    lib.add(tokens(Q_19), new_token_18)
+    marking(Q_19) := marking(Q_19) + 1
+    // Produce to Q_20
+    let new_token_19 = new Job
+    lib.add(tokens(Q_20), new_token_19)
+    marking(Q_20) := marking(Q_20) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Serve_1
+// -----------------------------------------------------------------------------
+
+rule at_end_action_serve_1(bound_tokens: List<Token>) =
+    // Produce to S_1
+    let server_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(S_1), server_token)
+    marking(S_1) := marking(S_1) + 1
+    // Produce to P_1
+    let job_token = lib.get(bound_tokens, 1)
+    lib.add(tokens(P_1), job_token)
+    marking(P_1) := marking(P_1) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Serve_2
+// -----------------------------------------------------------------------------
+
+rule at_end_action_serve_2(bound_tokens: List<Token>) =
+    // Produce to S_2
+    let server_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(S_2), server_token)
+    marking(S_2) := marking(S_2) + 1
+    // Produce to P_2
+    let job_token = lib.get(bound_tokens, 1)
+    lib.add(tokens(P_2), job_token)
+    marking(P_2) := marking(P_2) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Serve_3
+// -----------------------------------------------------------------------------
+
+rule at_end_action_serve_3(bound_tokens: List<Token>) =
+    // Produce to S_3
+    let server_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(S_3), server_token)
+    marking(S_3) := marking(S_3) + 1
+    // Produce to P_3
+    let job_token = lib.get(bound_tokens, 1)
+    lib.add(tokens(P_3), job_token)
+    marking(P_3) := marking(P_3) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Serve_4
+// -----------------------------------------------------------------------------
+
+rule at_end_action_serve_4(bound_tokens: List<Token>) =
+    // Produce to S_4
+    let server_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(S_4), server_token)
+    marking(S_4) := marking(S_4) + 1
+    // Produce to P_4
+    let job_token = lib.get(bound_tokens, 1)
+    lib.add(tokens(P_4), job_token)
+    marking(P_4) := marking(P_4) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Serve_5
+// -----------------------------------------------------------------------------
+
+rule at_end_action_serve_5(bound_tokens: List<Token>) =
+    // Produce to S_5
+    let server_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(S_5), server_token)
+    marking(S_5) := marking(S_5) + 1
+    // Produce to P_5
+    let job_token = lib.get(bound_tokens, 1)
+    lib.add(tokens(P_5), job_token)
+    marking(P_5) := marking(P_5) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Serve_6
+// -----------------------------------------------------------------------------
+
+rule at_end_action_serve_6(bound_tokens: List<Token>) =
+    // Produce to S_6
+    let server_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(S_6), server_token)
+    marking(S_6) := marking(S_6) + 1
+    // Produce to P_6
+    let job_token = lib.get(bound_tokens, 1)
+    lib.add(tokens(P_6), job_token)
+    marking(P_6) := marking(P_6) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Serve_7
+// -----------------------------------------------------------------------------
+
+rule at_end_action_serve_7(bound_tokens: List<Token>) =
+    // Produce to S_7
+    let server_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(S_7), server_token)
+    marking(S_7) := marking(S_7) + 1
+    // Produce to P_7
+    let job_token = lib.get(bound_tokens, 1)
+    lib.add(tokens(P_7), job_token)
+    marking(P_7) := marking(P_7) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Serve_8
+// -----------------------------------------------------------------------------
+
+rule at_end_action_serve_8(bound_tokens: List<Token>) =
+    // Produce to S_8
+    let server_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(S_8), server_token)
+    marking(S_8) := marking(S_8) + 1
+    // Produce to P_8
+    let job_token = lib.get(bound_tokens, 1)
+    lib.add(tokens(P_8), job_token)
+    marking(P_8) := marking(P_8) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Serve_9
+// -----------------------------------------------------------------------------
+
+rule at_end_action_serve_9(bound_tokens: List<Token>) =
+    // Produce to S_9
+    let server_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(S_9), server_token)
+    marking(S_9) := marking(S_9) + 1
+    // Produce to P_9
+    let job_token = lib.get(bound_tokens, 1)
+    lib.add(tokens(P_9), job_token)
+    marking(P_9) := marking(P_9) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Serve_10
+// -----------------------------------------------------------------------------
+
+rule at_end_action_serve_10(bound_tokens: List<Token>) =
+    // Produce to S_10
+    let server_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(S_10), server_token)
+    marking(S_10) := marking(S_10) + 1
+    // Produce to P_10
+    let job_token = lib.get(bound_tokens, 1)
+    lib.add(tokens(P_10), job_token)
+    marking(P_10) := marking(P_10) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Serve_11
+// -----------------------------------------------------------------------------
+
+rule at_end_action_serve_11(bound_tokens: List<Token>) =
+    // Produce to S_11
+    let server_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(S_11), server_token)
+    marking(S_11) := marking(S_11) + 1
+    // Produce to P_11
+    let job_token = lib.get(bound_tokens, 1)
+    lib.add(tokens(P_11), job_token)
+    marking(P_11) := marking(P_11) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Serve_12
+// -----------------------------------------------------------------------------
+
+rule at_end_action_serve_12(bound_tokens: List<Token>) =
+    // Produce to S_12
+    let server_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(S_12), server_token)
+    marking(S_12) := marking(S_12) + 1
+    // Produce to P_12
+    let job_token = lib.get(bound_tokens, 1)
+    lib.add(tokens(P_12), job_token)
+    marking(P_12) := marking(P_12) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Serve_13
+// -----------------------------------------------------------------------------
+
+rule at_end_action_serve_13(bound_tokens: List<Token>) =
+    // Produce to S_13
+    let server_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(S_13), server_token)
+    marking(S_13) := marking(S_13) + 1
+    // Produce to P_13
+    let job_token = lib.get(bound_tokens, 1)
+    lib.add(tokens(P_13), job_token)
+    marking(P_13) := marking(P_13) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Serve_14
+// -----------------------------------------------------------------------------
+
+rule at_end_action_serve_14(bound_tokens: List<Token>) =
+    // Produce to S_14
+    let server_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(S_14), server_token)
+    marking(S_14) := marking(S_14) + 1
+    // Produce to P_14
+    let job_token = lib.get(bound_tokens, 1)
+    lib.add(tokens(P_14), job_token)
+    marking(P_14) := marking(P_14) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Serve_15
+// -----------------------------------------------------------------------------
+
+rule at_end_action_serve_15(bound_tokens: List<Token>) =
+    // Produce to S_15
+    let server_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(S_15), server_token)
+    marking(S_15) := marking(S_15) + 1
+    // Produce to P_15
+    let job_token = lib.get(bound_tokens, 1)
+    lib.add(tokens(P_15), job_token)
+    marking(P_15) := marking(P_15) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Serve_16
+// -----------------------------------------------------------------------------
+
+rule at_end_action_serve_16(bound_tokens: List<Token>) =
+    // Produce to S_16
+    let server_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(S_16), server_token)
+    marking(S_16) := marking(S_16) + 1
+    // Produce to P_16
+    let job_token = lib.get(bound_tokens, 1)
+    lib.add(tokens(P_16), job_token)
+    marking(P_16) := marking(P_16) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Serve_17
+// -----------------------------------------------------------------------------
+
+rule at_end_action_serve_17(bound_tokens: List<Token>) =
+    // Produce to S_17
+    let server_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(S_17), server_token)
+    marking(S_17) := marking(S_17) + 1
+    // Produce to P_17
+    let job_token = lib.get(bound_tokens, 1)
+    lib.add(tokens(P_17), job_token)
+    marking(P_17) := marking(P_17) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Serve_18
+// -----------------------------------------------------------------------------
+
+rule at_end_action_serve_18(bound_tokens: List<Token>) =
+    // Produce to S_18
+    let server_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(S_18), server_token)
+    marking(S_18) := marking(S_18) + 1
+    // Produce to P_18
+    let job_token = lib.get(bound_tokens, 1)
+    lib.add(tokens(P_18), job_token)
+    marking(P_18) := marking(P_18) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Serve_19
+// -----------------------------------------------------------------------------
+
+rule at_end_action_serve_19(bound_tokens: List<Token>) =
+    // Produce to S_19
+    let server_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(S_19), server_token)
+    marking(S_19) := marking(S_19) + 1
+    // Produce to P_19
+    let job_token = lib.get(bound_tokens, 1)
+    lib.add(tokens(P_19), job_token)
+    marking(P_19) := marking(P_19) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Serve_20
+// -----------------------------------------------------------------------------
+
+rule at_end_action_serve_20(bound_tokens: List<Token>) =
+    // Produce to S_20
+    let server_token = lib.get(bound_tokens, 0)
+    lib.add(tokens(S_20), server_token)
+    marking(S_20) := marking(S_20) + 1
+    // Produce to P_20
+    let job_token = lib.get(bound_tokens, 1)
+    lib.add(tokens(P_20), job_token)
+    marking(P_20) := marking(P_20) + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// At-end: Join
+// -----------------------------------------------------------------------------
+
+rule at_end_action_join(bound_tokens: List<Token>) =
+    // Produce to Jobs
+    let new_token_0 = new Job
+    lib.add(tokens(Jobs), new_token_0)
+    marking(Jobs) := marking(Jobs) + 1
+    departure_count := departure_count + 1
+endrule
+
+// -----------------------------------------------------------------------------
+// Phase 1: Scanning Phase (Fine-Grained - ONE activity)
+// -----------------------------------------------------------------------------
+
+rule scanning_phase_single() =
+    activity_started := false
+
+    // Try Join (priority 0)
+    if not activity_started and at_begin_condition_join() then
+        at_begin_action_join()
+        activity_started := true
+    endif
+
+    // Try Serve_1 (priority 1)
+    if not activity_started and at_begin_condition_serve_1() then
+        at_begin_action_serve_1()
+        activity_started := true
+    endif
+
+    // Try Serve_2 (priority 1)
+    if not activity_started and at_begin_condition_serve_2() then
+        at_begin_action_serve_2()
+        activity_started := true
+    endif
+
+    // Try Serve_3 (priority 1)
+    if not activity_started and at_begin_condition_serve_3() then
+        at_begin_action_serve_3()
+        activity_started := true
+    endif
+
+    // Try Serve_4 (priority 1)
+    if not activity_started and at_begin_condition_serve_4() then
+        at_begin_action_serve_4()
+        activity_started := true
+    endif
+
+    // Try Serve_5 (priority 1)
+    if not activity_started and at_begin_condition_serve_5() then
+        at_begin_action_serve_5()
+        activity_started := true
+    endif
+
+    // Try Serve_6 (priority 1)
+    if not activity_started and at_begin_condition_serve_6() then
+        at_begin_action_serve_6()
+        activity_started := true
+    endif
+
+    // Try Serve_7 (priority 1)
+    if not activity_started and at_begin_condition_serve_7() then
+        at_begin_action_serve_7()
+        activity_started := true
+    endif
+
+    // Try Serve_8 (priority 1)
+    if not activity_started and at_begin_condition_serve_8() then
+        at_begin_action_serve_8()
+        activity_started := true
+    endif
+
+    // Try Serve_9 (priority 1)
+    if not activity_started and at_begin_condition_serve_9() then
+        at_begin_action_serve_9()
+        activity_started := true
+    endif
+
+    // Try Serve_10 (priority 1)
+    if not activity_started and at_begin_condition_serve_10() then
+        at_begin_action_serve_10()
+        activity_started := true
+    endif
+
+    // Try Serve_11 (priority 1)
+    if not activity_started and at_begin_condition_serve_11() then
+        at_begin_action_serve_11()
+        activity_started := true
+    endif
+
+    // Try Serve_12 (priority 1)
+    if not activity_started and at_begin_condition_serve_12() then
+        at_begin_action_serve_12()
+        activity_started := true
+    endif
+
+    // Try Serve_13 (priority 1)
+    if not activity_started and at_begin_condition_serve_13() then
+        at_begin_action_serve_13()
+        activity_started := true
+    endif
+
+    // Try Serve_14 (priority 1)
+    if not activity_started and at_begin_condition_serve_14() then
+        at_begin_action_serve_14()
+        activity_started := true
+    endif
+
+    // Try Serve_15 (priority 1)
+    if not activity_started and at_begin_condition_serve_15() then
+        at_begin_action_serve_15()
+        activity_started := true
+    endif
+
+    // Try Serve_16 (priority 1)
+    if not activity_started and at_begin_condition_serve_16() then
+        at_begin_action_serve_16()
+        activity_started := true
+    endif
+
+    // Try Serve_17 (priority 1)
+    if not activity_started and at_begin_condition_serve_17() then
+        at_begin_action_serve_17()
+        activity_started := true
+    endif
+
+    // Try Serve_18 (priority 1)
+    if not activity_started and at_begin_condition_serve_18() then
+        at_begin_action_serve_18()
+        activity_started := true
+    endif
+
+    // Try Serve_19 (priority 1)
+    if not activity_started and at_begin_condition_serve_19() then
+        at_begin_action_serve_19()
+        activity_started := true
+    endif
+
+    // Try Serve_20 (priority 1)
+    if not activity_started and at_begin_condition_serve_20() then
+        at_begin_action_serve_20()
+        activity_started := true
+    endif
+
+    // Try Fork (priority 2)
+    if not activity_started and at_begin_condition_fork() then
+        at_begin_action_fork()
+        activity_started := true
+    endif
+
+    // Try Create (priority 3)
+    if not activity_started and at_begin_condition_create() then
+        at_begin_action_create()
+        activity_started := true
+    endif
+endrule
+
+// -----------------------------------------------------------------------------
+// Phase 2: Timing Phase
+// -----------------------------------------------------------------------------
+
+rule timing_phase() =
+    // Sort FEL by scheduled time
+    lib.sort(future_event_list, "bto_scheduled_time")
+
+    let next_event = lib.pop(future_event_list)
+
+    // Advance clock
+    sim_clocktime := bto_scheduled_time(next_event)
+
+    // Execute at-end actions
+    executing_phase(next_event)
+endrule
+
+// -----------------------------------------------------------------------------
+// Phase 3: Executing Phase
+// -----------------------------------------------------------------------------
+
+rule executing_phase(bto_event: BTOEvent) =
+    let activity = bto_activity(bto_event)
+    let bound_tokens = bto_tokens(bto_event)
+
+    if activity == Create then
+        at_end_action_create(bound_tokens)
+    endif
+
+    if activity == Fork then
+        at_end_action_fork(bound_tokens)
+    endif
+
+    if activity == Serve_1 then
+        at_end_action_serve_1(bound_tokens)
+    endif
+
+    if activity == Serve_2 then
+        at_end_action_serve_2(bound_tokens)
+    endif
+
+    if activity == Serve_3 then
+        at_end_action_serve_3(bound_tokens)
+    endif
+
+    if activity == Serve_4 then
+        at_end_action_serve_4(bound_tokens)
+    endif
+
+    if activity == Serve_5 then
+        at_end_action_serve_5(bound_tokens)
+    endif
+
+    if activity == Serve_6 then
+        at_end_action_serve_6(bound_tokens)
+    endif
+
+    if activity == Serve_7 then
+        at_end_action_serve_7(bound_tokens)
+    endif
+
+    if activity == Serve_8 then
+        at_end_action_serve_8(bound_tokens)
+    endif
+
+    if activity == Serve_9 then
+        at_end_action_serve_9(bound_tokens)
+    endif
+
+    if activity == Serve_10 then
+        at_end_action_serve_10(bound_tokens)
+    endif
+
+    if activity == Serve_11 then
+        at_end_action_serve_11(bound_tokens)
+    endif
+
+    if activity == Serve_12 then
+        at_end_action_serve_12(bound_tokens)
+    endif
+
+    if activity == Serve_13 then
+        at_end_action_serve_13(bound_tokens)
+    endif
+
+    if activity == Serve_14 then
+        at_end_action_serve_14(bound_tokens)
+    endif
+
+    if activity == Serve_15 then
+        at_end_action_serve_15(bound_tokens)
+    endif
+
+    if activity == Serve_16 then
+        at_end_action_serve_16(bound_tokens)
+    endif
+
+    if activity == Serve_17 then
+        at_end_action_serve_17(bound_tokens)
+    endif
+
+    if activity == Serve_18 then
+        at_end_action_serve_18(bound_tokens)
+    endif
+
+    if activity == Serve_19 then
+        at_end_action_serve_19(bound_tokens)
+    endif
+
+    if activity == Serve_20 then
+        at_end_action_serve_20(bound_tokens)
+    endif
+
+    if activity == Join then
+        at_end_action_join(bound_tokens)
+    endif
+endrule
+
+// =============================================================================
+// INITIAL STATE
+// =============================================================================
+
+init:
+    // Create queue objects
+    C := new Queue
+    Q_fork := new Queue
+    Q_1 := new Queue
+    S_1 := new Queue
+    P_1 := new Queue
+    Q_2 := new Queue
+    S_2 := new Queue
+    P_2 := new Queue
+    Q_3 := new Queue
+    S_3 := new Queue
+    P_3 := new Queue
+    Q_4 := new Queue
+    S_4 := new Queue
+    P_4 := new Queue
+    Q_5 := new Queue
+    S_5 := new Queue
+    P_5 := new Queue
+    Q_6 := new Queue
+    S_6 := new Queue
+    P_6 := new Queue
+    Q_7 := new Queue
+    S_7 := new Queue
+    P_7 := new Queue
+    Q_8 := new Queue
+    S_8 := new Queue
+    P_8 := new Queue
+    Q_9 := new Queue
+    S_9 := new Queue
+    P_9 := new Queue
+    Q_10 := new Queue
+    S_10 := new Queue
+    P_10 := new Queue
+    Q_11 := new Queue
+    S_11 := new Queue
+    P_11 := new Queue
+    Q_12 := new Queue
+    S_12 := new Queue
+    P_12 := new Queue
+    Q_13 := new Queue
+    S_13 := new Queue
+    P_13 := new Queue
+    Q_14 := new Queue
+    S_14 := new Queue
+    P_14 := new Queue
+    Q_15 := new Queue
+    S_15 := new Queue
+    P_15 := new Queue
+    Q_16 := new Queue
+    S_16 := new Queue
+    P_16 := new Queue
+    Q_17 := new Queue
+    S_17 := new Queue
+    P_17 := new Queue
+    Q_18 := new Queue
+    S_18 := new Queue
+    P_18 := new Queue
+    Q_19 := new Queue
+    S_19 := new Queue
+    P_19 := new Queue
+    Q_20 := new Queue
+    S_20 := new Queue
+    P_20 := new Queue
+    Jobs := new Queue
+
+    // Create activity objects
+    Create := new Activity
+    Fork := new Activity
+    Serve_1 := new Activity
+    Serve_2 := new Activity
+    Serve_3 := new Activity
+    Serve_4 := new Activity
+    Serve_5 := new Activity
+    Serve_6 := new Activity
+    Serve_7 := new Activity
+    Serve_8 := new Activity
+    Serve_9 := new Activity
+    Serve_10 := new Activity
+    Serve_11 := new Activity
+    Serve_12 := new Activity
+    Serve_13 := new Activity
+    Serve_14 := new Activity
+    Serve_15 := new Activity
+    Serve_16 := new Activity
+    Serve_17 := new Activity
+    Serve_18 := new Activity
+    Serve_19 := new Activity
+    Serve_20 := new Activity
+    Join := new Activity
+
+    // Parameters
+    num_servers := 5
+    iat_mean := 1.25
+    ist_mean := 1.0
+    sim_end_time := 10000.0
+
+    // Initial markings
+    marking(C) := 1
+    marking(Q_fork) := 0
+    marking(Q_1) := 0
+    marking(S_1) := 5
+    marking(P_1) := 0
+    marking(Q_2) := 0
+    marking(S_2) := 5
+    marking(P_2) := 0
+    marking(Q_3) := 0
+    marking(S_3) := 5
+    marking(P_3) := 0
+    marking(Q_4) := 0
+    marking(S_4) := 5
+    marking(P_4) := 0
+    marking(Q_5) := 0
+    marking(S_5) := 5
+    marking(P_5) := 0
+    marking(Q_6) := 0
+    marking(S_6) := 5
+    marking(P_6) := 0
+    marking(Q_7) := 0
+    marking(S_7) := 5
+    marking(P_7) := 0
+    marking(Q_8) := 0
+    marking(S_8) := 5
+    marking(P_8) := 0
+    marking(Q_9) := 0
+    marking(S_9) := 5
+    marking(P_9) := 0
+    marking(Q_10) := 0
+    marking(S_10) := 5
+    marking(P_10) := 0
+    marking(Q_11) := 0
+    marking(S_11) := 5
+    marking(P_11) := 0
+    marking(Q_12) := 0
+    marking(S_12) := 5
+    marking(P_12) := 0
+    marking(Q_13) := 0
+    marking(S_13) := 5
+    marking(P_13) := 0
+    marking(Q_14) := 0
+    marking(S_14) := 5
+    marking(P_14) := 0
+    marking(Q_15) := 0
+    marking(S_15) := 5
+    marking(P_15) := 0
+    marking(Q_16) := 0
+    marking(S_16) := 5
+    marking(P_16) := 0
+    marking(Q_17) := 0
+    marking(S_17) := 5
+    marking(P_17) := 0
+    marking(Q_18) := 0
+    marking(S_18) := 5
+    marking(P_18) := 0
+    marking(Q_19) := 0
+    marking(S_19) := 5
+    marking(P_19) := 0
+    marking(Q_20) := 0
+    marking(S_20) := 5
+    marking(P_20) := 0
+    marking(Jobs) := 0
+
+    // Initialize token lists
+    tokens(C) := []
+    tokens(Q_fork) := []
+    tokens(Q_1) := []
+    tokens(S_1) := []
+    tokens(P_1) := []
+    tokens(Q_2) := []
+    tokens(S_2) := []
+    tokens(P_2) := []
+    tokens(Q_3) := []
+    tokens(S_3) := []
+    tokens(P_3) := []
+    tokens(Q_4) := []
+    tokens(S_4) := []
+    tokens(P_4) := []
+    tokens(Q_5) := []
+    tokens(S_5) := []
+    tokens(P_5) := []
+    tokens(Q_6) := []
+    tokens(S_6) := []
+    tokens(P_6) := []
+    tokens(Q_7) := []
+    tokens(S_7) := []
+    tokens(P_7) := []
+    tokens(Q_8) := []
+    tokens(S_8) := []
+    tokens(P_8) := []
+    tokens(Q_9) := []
+    tokens(S_9) := []
+    tokens(P_9) := []
+    tokens(Q_10) := []
+    tokens(S_10) := []
+    tokens(P_10) := []
+    tokens(Q_11) := []
+    tokens(S_11) := []
+    tokens(P_11) := []
+    tokens(Q_12) := []
+    tokens(S_12) := []
+    tokens(P_12) := []
+    tokens(Q_13) := []
+    tokens(S_13) := []
+    tokens(P_13) := []
+    tokens(Q_14) := []
+    tokens(S_14) := []
+    tokens(P_14) := []
+    tokens(Q_15) := []
+    tokens(S_15) := []
+    tokens(P_15) := []
+    tokens(Q_16) := []
+    tokens(S_16) := []
+    tokens(P_16) := []
+    tokens(Q_17) := []
+    tokens(S_17) := []
+    tokens(P_17) := []
+    tokens(Q_18) := []
+    tokens(S_18) := []
+    tokens(P_18) := []
+    tokens(Q_19) := []
+    tokens(S_19) := []
+    tokens(P_19) := []
+    tokens(Q_20) := []
+    tokens(S_20) := []
+    tokens(P_20) := []
+    tokens(Jobs) := []
+
+    // Simulation state
+    sim_clocktime := 0.0
+    future_event_list := []
+
+    // Phase control (fine-grained)
+    current_phase := "init"
+    activity_started := false
+
+    // Additional state variables
+    job_id_counter := 0
+    departure_count := 0
+
+endinit
+
+// =============================================================================
+// MAIN RULE (Fine-Grained Activity Scanning)
+// =============================================================================
+
+main rule main =
+    // Phase: init - Initialize and switch to scan
+    if current_phase == "init" then
+        initialisation_routine()
+        current_phase := "scan"
+    endif
+
+    // Run while not stopped
+    if sim_clocktime < sim_end_time then
+        if current_phase == "scan" then
+            scanning_phase_single()
+            // If no activity started, switch to timing
+            if not activity_started then
+                current_phase := "time"
+            endif
+            // If activity started, stay in scan to try more
+        else
+            // current_phase == "time"
+            if lib.length(future_event_list) > 0 then
+                timing_phase()
+            endif
+            current_phase := "scan"
+        endif
+    endif
+endrule
