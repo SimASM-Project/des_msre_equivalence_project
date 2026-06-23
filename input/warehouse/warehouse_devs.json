@@ -1,0 +1,2788 @@
+{
+  "model_name": "warehouse_devs",
+  "description": "6-station warehouse outbound - per-server DEVS for stream-synchronized equivalence",
+  "entities": {
+    "Job": {
+      "name": "Job",
+      "parent": "Object",
+      "attributes": {
+        "arrival_time": "Real",
+        "departure_time": "Real"
+      }
+    }
+  },
+  "parameters": {
+    "Q1_max": {
+      "type": "Nat",
+      "value": 30,
+      "description": "Queue capacity at PickA"
+    },
+    "Q2_max": {
+      "type": "Nat",
+      "value": 20,
+      "description": "Queue capacity at PickB"
+    },
+    "Q3_max": {
+      "type": "Nat",
+      "value": 50,
+      "description": "Queue capacity at Label"
+    },
+    "Q4_max": {
+      "type": "Nat",
+      "value": 20,
+      "description": "Queue capacity at Scan"
+    },
+    "Q5_max": {
+      "type": "Nat",
+      "value": 30,
+      "description": "Queue capacity at Pack"
+    },
+    "Q6_max": {
+      "type": "Nat",
+      "value": 20,
+      "description": "Queue capacity at Release"
+    },
+    "S1_capacity": {
+      "type": "Nat",
+      "value": 4,
+      "description": "Number of servers at PickA"
+    },
+    "S2_capacity": {
+      "type": "Nat",
+      "value": 2,
+      "description": "Number of servers at PickB"
+    },
+    "S3_capacity": {
+      "type": "Nat",
+      "value": 3,
+      "description": "Number of servers at Label"
+    },
+    "S4_capacity": {
+      "type": "Nat",
+      "value": 1,
+      "description": "Number of servers at Scan"
+    },
+    "S5_capacity": {
+      "type": "Nat",
+      "value": 3,
+      "description": "Number of servers at Pack"
+    },
+    "S6_capacity": {
+      "type": "Nat",
+      "value": 2,
+      "description": "Number of servers at Release"
+    },
+    "iat_c1_mean": {
+      "type": "Real",
+      "value": 325.5,
+      "description": "IAT Zone A Type 1"
+    },
+    "iat_c2_mean": {
+      "type": "Real",
+      "value": 527.6,
+      "description": "IAT Zone A Type 2"
+    },
+    "iat_c3_mean": {
+      "type": "Real",
+      "value": 226.1,
+      "description": "IAT Zone B Type 1"
+    },
+    "iat_c4_mean": {
+      "type": "Real",
+      "value": 985.6,
+      "description": "IAT Zone B Type 2"
+    },
+    "ist_s1_mean": {
+      "type": "Real",
+      "value": 78.4,
+      "description": "Service time PickA"
+    },
+    "ist_s2_mean": {
+      "type": "Real",
+      "value": 76.2,
+      "description": "Service time PickB"
+    },
+    "ist_s3_mean": {
+      "type": "Real",
+      "value": 288.8,
+      "description": "Service time Label"
+    },
+    "ist_s4_mean": {
+      "type": "Real",
+      "value": 31.2,
+      "description": "Service time Scan"
+    },
+    "ist_s5_mean": {
+      "type": "Real",
+      "value": 66.8,
+      "description": "Service time Pack"
+    },
+    "ist_s6_mean": {
+      "type": "Real",
+      "value": 1.0,
+      "description": "Service time Release"
+    },
+    "sim_end_time": {
+      "type": "Real",
+      "value": 10000.0,
+      "description": "Simulation end time"
+    }
+  },
+  "random_streams": {
+    "interarrival_za1": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "iat_c1_mean"
+      },
+      "stream_name": "creation_za1"
+    },
+    "interarrival_za2": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "iat_c2_mean"
+      },
+      "stream_name": "creation_za2"
+    },
+    "interarrival_zb1": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "iat_c3_mean"
+      },
+      "stream_name": "creation_zb1"
+    },
+    "interarrival_zb2": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "iat_c4_mean"
+      },
+      "stream_name": "creation_zb2"
+    },
+    "service_time_pick_a": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "ist_s1_mean"
+      },
+      "stream_name": "service_pick_a"
+    },
+    "service_time_pick_b": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "ist_s2_mean"
+      },
+      "stream_name": "service_pick_b"
+    },
+    "service_time_label": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "ist_s3_mean"
+      },
+      "stream_name": "service_label"
+    },
+    "service_time_scan": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "ist_s4_mean"
+      },
+      "stream_name": "service_scan"
+    },
+    "service_time_pack": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "ist_s5_mean"
+      },
+      "stream_name": "service_pack"
+    },
+    "service_time_release": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "ist_s6_mean"
+      },
+      "stream_name": "service_release"
+    }
+  },
+  "atomic_models": [
+    {
+      "name": "GenZA1",
+      "description": "Zone A Type 1 job generator",
+      "inputs": [],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "active",
+          "time_advance": "interarrival_za1"
+        }
+      ],
+      "initial_state": "active",
+      "state_variables": {
+        "job_count": {
+          "type": "Nat",
+          "initial": 0
+        }
+      },
+      "internal_transitions": [
+        {
+          "from": "active",
+          "to": "active",
+          "state_change": "job_count := job_count + 1"
+        }
+      ],
+      "external_transitions": [],
+      "output_function": [
+        {
+          "state": "active",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "GenZA2",
+      "description": "Zone A Type 2 job generator",
+      "inputs": [],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "active",
+          "time_advance": "interarrival_za2"
+        }
+      ],
+      "initial_state": "active",
+      "state_variables": {
+        "job_count": {
+          "type": "Nat",
+          "initial": 0
+        }
+      },
+      "internal_transitions": [
+        {
+          "from": "active",
+          "to": "active",
+          "state_change": "job_count := job_count + 1"
+        }
+      ],
+      "external_transitions": [],
+      "output_function": [
+        {
+          "state": "active",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "GenZB1",
+      "description": "Zone B Type 1 job generator",
+      "inputs": [],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "active",
+          "time_advance": "interarrival_zb1"
+        }
+      ],
+      "initial_state": "active",
+      "state_variables": {
+        "job_count": {
+          "type": "Nat",
+          "initial": 0
+        }
+      },
+      "internal_transitions": [
+        {
+          "from": "active",
+          "to": "active",
+          "state_change": "job_count := job_count + 1"
+        }
+      ],
+      "external_transitions": [],
+      "output_function": [
+        {
+          "state": "active",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "GenZB2",
+      "description": "Zone B Type 2 job generator",
+      "inputs": [],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "active",
+          "time_advance": "interarrival_zb2"
+        }
+      ],
+      "initial_state": "active",
+      "state_variables": {
+        "job_count": {
+          "type": "Nat",
+          "initial": 0
+        }
+      },
+      "internal_transitions": [
+        {
+          "from": "active",
+          "to": "active",
+          "state_change": "job_count := job_count + 1"
+        }
+      ],
+      "external_transitions": [],
+      "output_function": [
+        {
+          "state": "active",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "PickA",
+      "description": "PickA queue/dispatcher (4 per-server)",
+      "inputs": [
+        "in",
+        "done_1",
+        "done_2",
+        "done_3",
+        "done_4"
+      ],
+      "outputs": [
+        "dispatch_1",
+        "dispatch_2",
+        "dispatch_3",
+        "dispatch_4"
+      ],
+      "states": [
+        {
+          "name": "idle",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "dispatch_to_1",
+          "time_advance": 0
+        },
+        {
+          "name": "dispatch_to_2",
+          "time_advance": 0
+        },
+        {
+          "name": "dispatch_to_3",
+          "time_advance": 0
+        },
+        {
+          "name": "dispatch_to_4",
+          "time_advance": 0
+        }
+      ],
+      "initial_state": "idle",
+      "state_variables": {
+        "queue_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "server_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "srv_1_free": {
+          "type": "Nat",
+          "initial": 1
+        },
+        "srv_2_free": {
+          "type": "Nat",
+          "initial": 1
+        },
+        "srv_3_free": {
+          "type": "Nat",
+          "initial": 1
+        },
+        "srv_4_free": {
+          "type": "Nat",
+          "initial": 1
+        }
+      },
+      "internal_transitions": [
+        {
+          "from": "dispatch_to_1",
+          "to": "dispatch_to_2",
+          "condition": "queue_count > 1 and srv_2_free == 1",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "to": "dispatch_to_3",
+          "condition": "queue_count > 1 and srv_2_free == 0 and srv_3_free == 1",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "to": "dispatch_to_4",
+          "condition": "queue_count > 1 and srv_2_free == 0 and srv_3_free == 0 and srv_4_free == 1",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "to": "idle",
+          "condition": "queue_count == 1",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "to": "idle",
+          "condition": "queue_count > 1 and srv_2_free == 0 and srv_3_free == 0 and srv_4_free == 0",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "to": "dispatch_to_3",
+          "condition": "queue_count > 1 and srv_3_free == 1",
+          "state_change": "queue_count := queue_count - 1; srv_2_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "to": "dispatch_to_4",
+          "condition": "queue_count > 1 and srv_3_free == 0 and srv_4_free == 1",
+          "state_change": "queue_count := queue_count - 1; srv_2_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "to": "idle",
+          "condition": "queue_count == 1",
+          "state_change": "queue_count := queue_count - 1; srv_2_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "to": "idle",
+          "condition": "queue_count > 1 and srv_3_free == 0 and srv_4_free == 0",
+          "state_change": "queue_count := queue_count - 1; srv_2_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_3",
+          "to": "dispatch_to_4",
+          "condition": "queue_count > 1 and srv_4_free == 1",
+          "state_change": "queue_count := queue_count - 1; srv_3_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_3",
+          "to": "idle",
+          "condition": "queue_count == 1",
+          "state_change": "queue_count := queue_count - 1; srv_3_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_3",
+          "to": "idle",
+          "condition": "queue_count > 1 and srv_4_free == 0",
+          "state_change": "queue_count := queue_count - 1; srv_3_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_4",
+          "to": "idle",
+          "condition": "queue_count == 1",
+          "state_change": "queue_count := queue_count - 1; srv_4_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_4",
+          "to": "idle",
+          "condition": "queue_count > 1",
+          "state_change": "queue_count := queue_count - 1; srv_4_free := 0; server_count := server_count + 1"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "dispatch_to_1",
+          "condition": "srv_1_free == 1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "dispatch_to_2",
+          "condition": "srv_1_free == 0 and srv_2_free == 1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "dispatch_to_3",
+          "condition": "srv_1_free == 0 and srv_2_free == 0 and srv_3_free == 1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "dispatch_to_4",
+          "condition": "srv_1_free == 0 and srv_2_free == 0 and srv_3_free == 0 and srv_4_free == 1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "idle",
+          "condition": "srv_1_free == 0 and srv_2_free == 0 and srv_3_free == 0 and srv_4_free == 0",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "in",
+          "to": "dispatch_to_1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "input_port": "in",
+          "to": "dispatch_to_2",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "dispatch_to_3",
+          "input_port": "in",
+          "to": "dispatch_to_3",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "dispatch_to_4",
+          "input_port": "in",
+          "to": "dispatch_to_4",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_1",
+          "to": "dispatch_to_1",
+          "condition": "queue_count > 0",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_1",
+          "to": "idle",
+          "condition": "queue_count == 0",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_2",
+          "to": "dispatch_to_2",
+          "condition": "queue_count > 0",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_2",
+          "to": "idle",
+          "condition": "queue_count == 0",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_3",
+          "to": "dispatch_to_3",
+          "condition": "queue_count > 0",
+          "state_change": "srv_3_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_3",
+          "to": "idle",
+          "condition": "queue_count == 0",
+          "state_change": "srv_3_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_4",
+          "to": "dispatch_to_4",
+          "condition": "queue_count > 0",
+          "state_change": "srv_4_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_4",
+          "to": "idle",
+          "condition": "queue_count == 0",
+          "state_change": "srv_4_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "done_1",
+          "to": "dispatch_to_1",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "done_2",
+          "to": "dispatch_to_1",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "done_3",
+          "to": "dispatch_to_1",
+          "state_change": "srv_3_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "done_4",
+          "to": "dispatch_to_1",
+          "state_change": "srv_4_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "input_port": "done_1",
+          "to": "dispatch_to_2",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "input_port": "done_2",
+          "to": "dispatch_to_2",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "input_port": "done_3",
+          "to": "dispatch_to_2",
+          "state_change": "srv_3_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "input_port": "done_4",
+          "to": "dispatch_to_2",
+          "state_change": "srv_4_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_3",
+          "input_port": "done_1",
+          "to": "dispatch_to_3",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_3",
+          "input_port": "done_2",
+          "to": "dispatch_to_3",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_3",
+          "input_port": "done_3",
+          "to": "dispatch_to_3",
+          "state_change": "srv_3_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_3",
+          "input_port": "done_4",
+          "to": "dispatch_to_3",
+          "state_change": "srv_4_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_4",
+          "input_port": "done_1",
+          "to": "dispatch_to_4",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_4",
+          "input_port": "done_2",
+          "to": "dispatch_to_4",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_4",
+          "input_port": "done_3",
+          "to": "dispatch_to_4",
+          "state_change": "srv_3_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_4",
+          "input_port": "done_4",
+          "to": "dispatch_to_4",
+          "state_change": "srv_4_free := 1; server_count := server_count - 1"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "dispatch_to_1",
+          "output_port": "dispatch_1",
+          "value": "job"
+        },
+        {
+          "state": "dispatch_to_2",
+          "output_port": "dispatch_2",
+          "value": "job"
+        },
+        {
+          "state": "dispatch_to_3",
+          "output_port": "dispatch_3",
+          "value": "job"
+        },
+        {
+          "state": "dispatch_to_4",
+          "output_port": "dispatch_4",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "PickA_Srv_1",
+      "description": "Individual server 1 for PickA",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_pick_a"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {},
+      "internal_transitions": [
+        {
+          "from": "busy",
+          "to": "passive"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "busy"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "PickA_Srv_2",
+      "description": "Individual server 2 for PickA",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_pick_a"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {},
+      "internal_transitions": [
+        {
+          "from": "busy",
+          "to": "passive"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "busy"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "PickA_Srv_3",
+      "description": "Individual server 3 for PickA",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_pick_a"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {},
+      "internal_transitions": [
+        {
+          "from": "busy",
+          "to": "passive"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "busy"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "PickA_Srv_4",
+      "description": "Individual server 4 for PickA",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_pick_a"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {},
+      "internal_transitions": [
+        {
+          "from": "busy",
+          "to": "passive"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "busy"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "PickB",
+      "description": "PickB queue/dispatcher (2 per-server)",
+      "inputs": [
+        "in",
+        "done_1",
+        "done_2"
+      ],
+      "outputs": [
+        "dispatch_1",
+        "dispatch_2"
+      ],
+      "states": [
+        {
+          "name": "idle",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "dispatch_to_1",
+          "time_advance": 0
+        },
+        {
+          "name": "dispatch_to_2",
+          "time_advance": 0
+        }
+      ],
+      "initial_state": "idle",
+      "state_variables": {
+        "queue_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "server_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "srv_1_free": {
+          "type": "Nat",
+          "initial": 1
+        },
+        "srv_2_free": {
+          "type": "Nat",
+          "initial": 1
+        }
+      },
+      "internal_transitions": [
+        {
+          "from": "dispatch_to_1",
+          "to": "dispatch_to_2",
+          "condition": "queue_count > 1 and srv_2_free == 1",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "to": "idle",
+          "condition": "queue_count == 1",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "to": "idle",
+          "condition": "queue_count > 1 and srv_2_free == 0",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "to": "idle",
+          "condition": "queue_count == 1",
+          "state_change": "queue_count := queue_count - 1; srv_2_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "to": "idle",
+          "condition": "queue_count > 1",
+          "state_change": "queue_count := queue_count - 1; srv_2_free := 0; server_count := server_count + 1"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "dispatch_to_1",
+          "condition": "srv_1_free == 1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "dispatch_to_2",
+          "condition": "srv_1_free == 0 and srv_2_free == 1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "idle",
+          "condition": "srv_1_free == 0 and srv_2_free == 0",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "in",
+          "to": "dispatch_to_1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "input_port": "in",
+          "to": "dispatch_to_2",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_1",
+          "to": "dispatch_to_1",
+          "condition": "queue_count > 0",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_1",
+          "to": "idle",
+          "condition": "queue_count == 0",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_2",
+          "to": "dispatch_to_2",
+          "condition": "queue_count > 0",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_2",
+          "to": "idle",
+          "condition": "queue_count == 0",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "done_1",
+          "to": "dispatch_to_1",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "done_2",
+          "to": "dispatch_to_1",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "input_port": "done_1",
+          "to": "dispatch_to_2",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "input_port": "done_2",
+          "to": "dispatch_to_2",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "dispatch_to_1",
+          "output_port": "dispatch_1",
+          "value": "job"
+        },
+        {
+          "state": "dispatch_to_2",
+          "output_port": "dispatch_2",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "PickB_Srv_1",
+      "description": "Individual server 1 for PickB",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_pick_b"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {},
+      "internal_transitions": [
+        {
+          "from": "busy",
+          "to": "passive"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "busy"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "PickB_Srv_2",
+      "description": "Individual server 2 for PickB",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_pick_b"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {},
+      "internal_transitions": [
+        {
+          "from": "busy",
+          "to": "passive"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "busy"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Label",
+      "description": "Label queue/dispatcher (3 per-server)",
+      "inputs": [
+        "in",
+        "done_1",
+        "done_2",
+        "done_3"
+      ],
+      "outputs": [
+        "dispatch_1",
+        "dispatch_2",
+        "dispatch_3"
+      ],
+      "states": [
+        {
+          "name": "idle",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "dispatch_to_1",
+          "time_advance": 0
+        },
+        {
+          "name": "dispatch_to_2",
+          "time_advance": 0
+        },
+        {
+          "name": "dispatch_to_3",
+          "time_advance": 0
+        }
+      ],
+      "initial_state": "idle",
+      "state_variables": {
+        "queue_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "server_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "srv_1_free": {
+          "type": "Nat",
+          "initial": 1
+        },
+        "srv_2_free": {
+          "type": "Nat",
+          "initial": 1
+        },
+        "srv_3_free": {
+          "type": "Nat",
+          "initial": 1
+        }
+      },
+      "internal_transitions": [
+        {
+          "from": "dispatch_to_1",
+          "to": "dispatch_to_2",
+          "condition": "queue_count > 1 and srv_2_free == 1",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "to": "dispatch_to_3",
+          "condition": "queue_count > 1 and srv_2_free == 0 and srv_3_free == 1",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "to": "idle",
+          "condition": "queue_count == 1",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "to": "idle",
+          "condition": "queue_count > 1 and srv_2_free == 0 and srv_3_free == 0",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "to": "dispatch_to_3",
+          "condition": "queue_count > 1 and srv_3_free == 1",
+          "state_change": "queue_count := queue_count - 1; srv_2_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "to": "idle",
+          "condition": "queue_count == 1",
+          "state_change": "queue_count := queue_count - 1; srv_2_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "to": "idle",
+          "condition": "queue_count > 1 and srv_3_free == 0",
+          "state_change": "queue_count := queue_count - 1; srv_2_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_3",
+          "to": "idle",
+          "condition": "queue_count == 1",
+          "state_change": "queue_count := queue_count - 1; srv_3_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_3",
+          "to": "idle",
+          "condition": "queue_count > 1",
+          "state_change": "queue_count := queue_count - 1; srv_3_free := 0; server_count := server_count + 1"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "dispatch_to_1",
+          "condition": "srv_1_free == 1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "dispatch_to_2",
+          "condition": "srv_1_free == 0 and srv_2_free == 1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "dispatch_to_3",
+          "condition": "srv_1_free == 0 and srv_2_free == 0 and srv_3_free == 1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "idle",
+          "condition": "srv_1_free == 0 and srv_2_free == 0 and srv_3_free == 0",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "in",
+          "to": "dispatch_to_1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "input_port": "in",
+          "to": "dispatch_to_2",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "dispatch_to_3",
+          "input_port": "in",
+          "to": "dispatch_to_3",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_1",
+          "to": "dispatch_to_1",
+          "condition": "queue_count > 0",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_1",
+          "to": "idle",
+          "condition": "queue_count == 0",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_2",
+          "to": "dispatch_to_2",
+          "condition": "queue_count > 0",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_2",
+          "to": "idle",
+          "condition": "queue_count == 0",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_3",
+          "to": "dispatch_to_3",
+          "condition": "queue_count > 0",
+          "state_change": "srv_3_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_3",
+          "to": "idle",
+          "condition": "queue_count == 0",
+          "state_change": "srv_3_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "done_1",
+          "to": "dispatch_to_1",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "done_2",
+          "to": "dispatch_to_1",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "done_3",
+          "to": "dispatch_to_1",
+          "state_change": "srv_3_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "input_port": "done_1",
+          "to": "dispatch_to_2",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "input_port": "done_2",
+          "to": "dispatch_to_2",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "input_port": "done_3",
+          "to": "dispatch_to_2",
+          "state_change": "srv_3_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_3",
+          "input_port": "done_1",
+          "to": "dispatch_to_3",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_3",
+          "input_port": "done_2",
+          "to": "dispatch_to_3",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_3",
+          "input_port": "done_3",
+          "to": "dispatch_to_3",
+          "state_change": "srv_3_free := 1; server_count := server_count - 1"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "dispatch_to_1",
+          "output_port": "dispatch_1",
+          "value": "job"
+        },
+        {
+          "state": "dispatch_to_2",
+          "output_port": "dispatch_2",
+          "value": "job"
+        },
+        {
+          "state": "dispatch_to_3",
+          "output_port": "dispatch_3",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Label_Srv_1",
+      "description": "Individual server 1 for Label",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_label"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {},
+      "internal_transitions": [
+        {
+          "from": "busy",
+          "to": "passive"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "busy"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Label_Srv_2",
+      "description": "Individual server 2 for Label",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_label"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {},
+      "internal_transitions": [
+        {
+          "from": "busy",
+          "to": "passive"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "busy"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Label_Srv_3",
+      "description": "Individual server 3 for Label",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_label"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {},
+      "internal_transitions": [
+        {
+          "from": "busy",
+          "to": "passive"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "busy"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Scan",
+      "description": "Scan queue/dispatcher (1 per-server)",
+      "inputs": [
+        "in",
+        "done_1"
+      ],
+      "outputs": [
+        "dispatch_1"
+      ],
+      "states": [
+        {
+          "name": "idle",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "dispatch_to_1",
+          "time_advance": 0
+        }
+      ],
+      "initial_state": "idle",
+      "state_variables": {
+        "queue_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "server_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "srv_1_free": {
+          "type": "Nat",
+          "initial": 1
+        }
+      },
+      "internal_transitions": [
+        {
+          "from": "dispatch_to_1",
+          "to": "idle",
+          "condition": "queue_count == 1",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "to": "idle",
+          "condition": "queue_count > 1",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "dispatch_to_1",
+          "condition": "srv_1_free == 1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "idle",
+          "condition": "srv_1_free == 0",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "in",
+          "to": "dispatch_to_1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_1",
+          "to": "dispatch_to_1",
+          "condition": "queue_count > 0",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_1",
+          "to": "idle",
+          "condition": "queue_count == 0",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "done_1",
+          "to": "dispatch_to_1",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "dispatch_to_1",
+          "output_port": "dispatch_1",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Scan_Srv_1",
+      "description": "Individual server 1 for Scan",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_scan"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {},
+      "internal_transitions": [
+        {
+          "from": "busy",
+          "to": "passive"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "busy"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Pack",
+      "description": "Pack queue/dispatcher (3 per-server)",
+      "inputs": [
+        "in",
+        "done_1",
+        "done_2",
+        "done_3"
+      ],
+      "outputs": [
+        "dispatch_1",
+        "dispatch_2",
+        "dispatch_3"
+      ],
+      "states": [
+        {
+          "name": "idle",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "dispatch_to_1",
+          "time_advance": 0
+        },
+        {
+          "name": "dispatch_to_2",
+          "time_advance": 0
+        },
+        {
+          "name": "dispatch_to_3",
+          "time_advance": 0
+        }
+      ],
+      "initial_state": "idle",
+      "state_variables": {
+        "queue_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "server_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "srv_1_free": {
+          "type": "Nat",
+          "initial": 1
+        },
+        "srv_2_free": {
+          "type": "Nat",
+          "initial": 1
+        },
+        "srv_3_free": {
+          "type": "Nat",
+          "initial": 1
+        }
+      },
+      "internal_transitions": [
+        {
+          "from": "dispatch_to_1",
+          "to": "dispatch_to_2",
+          "condition": "queue_count > 1 and srv_2_free == 1",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "to": "dispatch_to_3",
+          "condition": "queue_count > 1 and srv_2_free == 0 and srv_3_free == 1",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "to": "idle",
+          "condition": "queue_count == 1",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "to": "idle",
+          "condition": "queue_count > 1 and srv_2_free == 0 and srv_3_free == 0",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "to": "dispatch_to_3",
+          "condition": "queue_count > 1 and srv_3_free == 1",
+          "state_change": "queue_count := queue_count - 1; srv_2_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "to": "idle",
+          "condition": "queue_count == 1",
+          "state_change": "queue_count := queue_count - 1; srv_2_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "to": "idle",
+          "condition": "queue_count > 1 and srv_3_free == 0",
+          "state_change": "queue_count := queue_count - 1; srv_2_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_3",
+          "to": "idle",
+          "condition": "queue_count == 1",
+          "state_change": "queue_count := queue_count - 1; srv_3_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_3",
+          "to": "idle",
+          "condition": "queue_count > 1",
+          "state_change": "queue_count := queue_count - 1; srv_3_free := 0; server_count := server_count + 1"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "dispatch_to_1",
+          "condition": "srv_1_free == 1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "dispatch_to_2",
+          "condition": "srv_1_free == 0 and srv_2_free == 1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "dispatch_to_3",
+          "condition": "srv_1_free == 0 and srv_2_free == 0 and srv_3_free == 1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "idle",
+          "condition": "srv_1_free == 0 and srv_2_free == 0 and srv_3_free == 0",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "in",
+          "to": "dispatch_to_1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "input_port": "in",
+          "to": "dispatch_to_2",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "dispatch_to_3",
+          "input_port": "in",
+          "to": "dispatch_to_3",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_1",
+          "to": "dispatch_to_1",
+          "condition": "queue_count > 0",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_1",
+          "to": "idle",
+          "condition": "queue_count == 0",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_2",
+          "to": "dispatch_to_2",
+          "condition": "queue_count > 0",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_2",
+          "to": "idle",
+          "condition": "queue_count == 0",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_3",
+          "to": "dispatch_to_3",
+          "condition": "queue_count > 0",
+          "state_change": "srv_3_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_3",
+          "to": "idle",
+          "condition": "queue_count == 0",
+          "state_change": "srv_3_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "done_1",
+          "to": "dispatch_to_1",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "done_2",
+          "to": "dispatch_to_1",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "done_3",
+          "to": "dispatch_to_1",
+          "state_change": "srv_3_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "input_port": "done_1",
+          "to": "dispatch_to_2",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "input_port": "done_2",
+          "to": "dispatch_to_2",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "input_port": "done_3",
+          "to": "dispatch_to_2",
+          "state_change": "srv_3_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_3",
+          "input_port": "done_1",
+          "to": "dispatch_to_3",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_3",
+          "input_port": "done_2",
+          "to": "dispatch_to_3",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_3",
+          "input_port": "done_3",
+          "to": "dispatch_to_3",
+          "state_change": "srv_3_free := 1; server_count := server_count - 1"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "dispatch_to_1",
+          "output_port": "dispatch_1",
+          "value": "job"
+        },
+        {
+          "state": "dispatch_to_2",
+          "output_port": "dispatch_2",
+          "value": "job"
+        },
+        {
+          "state": "dispatch_to_3",
+          "output_port": "dispatch_3",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Pack_Srv_1",
+      "description": "Individual server 1 for Pack",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_pack"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {},
+      "internal_transitions": [
+        {
+          "from": "busy",
+          "to": "passive"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "busy"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Pack_Srv_2",
+      "description": "Individual server 2 for Pack",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_pack"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {},
+      "internal_transitions": [
+        {
+          "from": "busy",
+          "to": "passive"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "busy"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Pack_Srv_3",
+      "description": "Individual server 3 for Pack",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_pack"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {},
+      "internal_transitions": [
+        {
+          "from": "busy",
+          "to": "passive"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "busy"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Release",
+      "description": "Release queue/dispatcher (2 per-server)",
+      "inputs": [
+        "in",
+        "done_1",
+        "done_2"
+      ],
+      "outputs": [
+        "dispatch_1",
+        "dispatch_2"
+      ],
+      "states": [
+        {
+          "name": "idle",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "dispatch_to_1",
+          "time_advance": 0
+        },
+        {
+          "name": "dispatch_to_2",
+          "time_advance": 0
+        }
+      ],
+      "initial_state": "idle",
+      "state_variables": {
+        "queue_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "server_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "srv_1_free": {
+          "type": "Nat",
+          "initial": 1
+        },
+        "srv_2_free": {
+          "type": "Nat",
+          "initial": 1
+        }
+      },
+      "internal_transitions": [
+        {
+          "from": "dispatch_to_1",
+          "to": "dispatch_to_2",
+          "condition": "queue_count > 1 and srv_2_free == 1",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "to": "idle",
+          "condition": "queue_count == 1",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "to": "idle",
+          "condition": "queue_count > 1 and srv_2_free == 0",
+          "state_change": "queue_count := queue_count - 1; srv_1_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "to": "idle",
+          "condition": "queue_count == 1",
+          "state_change": "queue_count := queue_count - 1; srv_2_free := 0; server_count := server_count + 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "to": "idle",
+          "condition": "queue_count > 1",
+          "state_change": "queue_count := queue_count - 1; srv_2_free := 0; server_count := server_count + 1"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "dispatch_to_1",
+          "condition": "srv_1_free == 1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "dispatch_to_2",
+          "condition": "srv_1_free == 0 and srv_2_free == 1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "idle",
+          "condition": "srv_1_free == 0 and srv_2_free == 0",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "in",
+          "to": "dispatch_to_1",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "input_port": "in",
+          "to": "dispatch_to_2",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_1",
+          "to": "dispatch_to_1",
+          "condition": "queue_count > 0",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_1",
+          "to": "idle",
+          "condition": "queue_count == 0",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_2",
+          "to": "dispatch_to_2",
+          "condition": "queue_count > 0",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "done_2",
+          "to": "idle",
+          "condition": "queue_count == 0",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "done_1",
+          "to": "dispatch_to_1",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_1",
+          "input_port": "done_2",
+          "to": "dispatch_to_1",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "input_port": "done_1",
+          "to": "dispatch_to_2",
+          "state_change": "srv_1_free := 1; server_count := server_count - 1"
+        },
+        {
+          "from": "dispatch_to_2",
+          "input_port": "done_2",
+          "to": "dispatch_to_2",
+          "state_change": "srv_2_free := 1; server_count := server_count - 1"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "dispatch_to_1",
+          "output_port": "dispatch_1",
+          "value": "job"
+        },
+        {
+          "state": "dispatch_to_2",
+          "output_port": "dispatch_2",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Release_Srv_1",
+      "description": "Individual server 1 for Release",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_release"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {},
+      "internal_transitions": [
+        {
+          "from": "busy",
+          "to": "passive"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "busy"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Release_Srv_2",
+      "description": "Individual server 2 for Release",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_release"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {},
+      "internal_transitions": [
+        {
+          "from": "busy",
+          "to": "passive"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "busy"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Sink",
+      "description": "Job sink",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [],
+      "states": [
+        {
+          "name": "idle",
+          "time_advance": "infinity"
+        }
+      ],
+      "initial_state": "idle",
+      "state_variables": {
+        "departure_count": {
+          "type": "Nat",
+          "initial": 0
+        }
+      },
+      "internal_transitions": [],
+      "external_transitions": [
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "idle",
+          "state_change": "departure_count := departure_count + 1"
+        }
+      ],
+      "output_function": []
+    }
+  ],
+  "coupled_model": {
+    "name": "WarehouseOutbound",
+    "components": [
+      "GenZA1",
+      "GenZA2",
+      "GenZB1",
+      "GenZB2",
+      "PickA",
+      "PickA_Srv_1",
+      "PickA_Srv_2",
+      "PickA_Srv_3",
+      "PickA_Srv_4",
+      "PickB",
+      "PickB_Srv_1",
+      "PickB_Srv_2",
+      "Label",
+      "Label_Srv_1",
+      "Label_Srv_2",
+      "Label_Srv_3",
+      "Scan",
+      "Scan_Srv_1",
+      "Pack",
+      "Pack_Srv_1",
+      "Pack_Srv_2",
+      "Pack_Srv_3",
+      "Release",
+      "Release_Srv_1",
+      "Release_Srv_2",
+      "Sink"
+    ],
+    "internal_couplings": [
+      {
+        "from_model": "GenZA1",
+        "from_port": "out",
+        "to_model": "PickA",
+        "to_port": "in"
+      },
+      {
+        "from_model": "GenZA2",
+        "from_port": "out",
+        "to_model": "PickA",
+        "to_port": "in"
+      },
+      {
+        "from_model": "GenZB1",
+        "from_port": "out",
+        "to_model": "PickB",
+        "to_port": "in"
+      },
+      {
+        "from_model": "GenZB2",
+        "from_port": "out",
+        "to_model": "PickB",
+        "to_port": "in"
+      },
+      {
+        "from_model": "PickA",
+        "from_port": "dispatch_1",
+        "to_model": "PickA_Srv_1",
+        "to_port": "in"
+      },
+      {
+        "from_model": "PickA_Srv_1",
+        "from_port": "out",
+        "to_model": "Label",
+        "to_port": "in"
+      },
+      {
+        "from_model": "PickA_Srv_1",
+        "from_port": "out",
+        "to_model": "PickA",
+        "to_port": "done_1"
+      },
+      {
+        "from_model": "PickA",
+        "from_port": "dispatch_2",
+        "to_model": "PickA_Srv_2",
+        "to_port": "in"
+      },
+      {
+        "from_model": "PickA_Srv_2",
+        "from_port": "out",
+        "to_model": "Label",
+        "to_port": "in"
+      },
+      {
+        "from_model": "PickA_Srv_2",
+        "from_port": "out",
+        "to_model": "PickA",
+        "to_port": "done_2"
+      },
+      {
+        "from_model": "PickA",
+        "from_port": "dispatch_3",
+        "to_model": "PickA_Srv_3",
+        "to_port": "in"
+      },
+      {
+        "from_model": "PickA_Srv_3",
+        "from_port": "out",
+        "to_model": "Label",
+        "to_port": "in"
+      },
+      {
+        "from_model": "PickA_Srv_3",
+        "from_port": "out",
+        "to_model": "PickA",
+        "to_port": "done_3"
+      },
+      {
+        "from_model": "PickA",
+        "from_port": "dispatch_4",
+        "to_model": "PickA_Srv_4",
+        "to_port": "in"
+      },
+      {
+        "from_model": "PickA_Srv_4",
+        "from_port": "out",
+        "to_model": "Label",
+        "to_port": "in"
+      },
+      {
+        "from_model": "PickA_Srv_4",
+        "from_port": "out",
+        "to_model": "PickA",
+        "to_port": "done_4"
+      },
+      {
+        "from_model": "PickB",
+        "from_port": "dispatch_1",
+        "to_model": "PickB_Srv_1",
+        "to_port": "in"
+      },
+      {
+        "from_model": "PickB_Srv_1",
+        "from_port": "out",
+        "to_model": "Label",
+        "to_port": "in"
+      },
+      {
+        "from_model": "PickB_Srv_1",
+        "from_port": "out",
+        "to_model": "PickB",
+        "to_port": "done_1"
+      },
+      {
+        "from_model": "PickB",
+        "from_port": "dispatch_2",
+        "to_model": "PickB_Srv_2",
+        "to_port": "in"
+      },
+      {
+        "from_model": "PickB_Srv_2",
+        "from_port": "out",
+        "to_model": "Label",
+        "to_port": "in"
+      },
+      {
+        "from_model": "PickB_Srv_2",
+        "from_port": "out",
+        "to_model": "PickB",
+        "to_port": "done_2"
+      },
+      {
+        "from_model": "Label",
+        "from_port": "dispatch_1",
+        "to_model": "Label_Srv_1",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Label_Srv_1",
+        "from_port": "out",
+        "to_model": "Scan",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Label_Srv_1",
+        "from_port": "out",
+        "to_model": "Label",
+        "to_port": "done_1"
+      },
+      {
+        "from_model": "Label",
+        "from_port": "dispatch_2",
+        "to_model": "Label_Srv_2",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Label_Srv_2",
+        "from_port": "out",
+        "to_model": "Scan",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Label_Srv_2",
+        "from_port": "out",
+        "to_model": "Label",
+        "to_port": "done_2"
+      },
+      {
+        "from_model": "Label",
+        "from_port": "dispatch_3",
+        "to_model": "Label_Srv_3",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Label_Srv_3",
+        "from_port": "out",
+        "to_model": "Scan",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Label_Srv_3",
+        "from_port": "out",
+        "to_model": "Label",
+        "to_port": "done_3"
+      },
+      {
+        "from_model": "Scan",
+        "from_port": "dispatch_1",
+        "to_model": "Scan_Srv_1",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Scan_Srv_1",
+        "from_port": "out",
+        "to_model": "Pack",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Scan_Srv_1",
+        "from_port": "out",
+        "to_model": "Scan",
+        "to_port": "done_1"
+      },
+      {
+        "from_model": "Pack",
+        "from_port": "dispatch_1",
+        "to_model": "Pack_Srv_1",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Pack_Srv_1",
+        "from_port": "out",
+        "to_model": "Release",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Pack_Srv_1",
+        "from_port": "out",
+        "to_model": "Pack",
+        "to_port": "done_1"
+      },
+      {
+        "from_model": "Pack",
+        "from_port": "dispatch_2",
+        "to_model": "Pack_Srv_2",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Pack_Srv_2",
+        "from_port": "out",
+        "to_model": "Release",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Pack_Srv_2",
+        "from_port": "out",
+        "to_model": "Pack",
+        "to_port": "done_2"
+      },
+      {
+        "from_model": "Pack",
+        "from_port": "dispatch_3",
+        "to_model": "Pack_Srv_3",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Pack_Srv_3",
+        "from_port": "out",
+        "to_model": "Release",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Pack_Srv_3",
+        "from_port": "out",
+        "to_model": "Pack",
+        "to_port": "done_3"
+      },
+      {
+        "from_model": "Release",
+        "from_port": "dispatch_1",
+        "to_model": "Release_Srv_1",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Release_Srv_1",
+        "from_port": "out",
+        "to_model": "Sink",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Release_Srv_1",
+        "from_port": "out",
+        "to_model": "Release",
+        "to_port": "done_1"
+      },
+      {
+        "from_model": "Release",
+        "from_port": "dispatch_2",
+        "to_model": "Release_Srv_2",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Release_Srv_2",
+        "from_port": "out",
+        "to_model": "Sink",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Release_Srv_2",
+        "from_port": "out",
+        "to_model": "Release",
+        "to_port": "done_2"
+      }
+    ],
+    "external_input_couplings": [],
+    "external_output_couplings": [],
+    "select_priority": [
+      "GenZA1",
+      "GenZA2",
+      "GenZB1",
+      "GenZB2",
+      "PickA",
+      "PickA_Srv_1",
+      "PickA_Srv_2",
+      "PickA_Srv_3",
+      "PickA_Srv_4",
+      "PickB",
+      "PickB_Srv_1",
+      "PickB_Srv_2",
+      "Label",
+      "Label_Srv_1",
+      "Label_Srv_2",
+      "Label_Srv_3",
+      "Scan",
+      "Scan_Srv_1",
+      "Pack",
+      "Pack_Srv_1",
+      "Pack_Srv_2",
+      "Pack_Srv_3",
+      "Release",
+      "Release_Srv_1",
+      "Release_Srv_2",
+      "Sink"
+    ]
+  },
+  "state_variables": {},
+  "observables": {
+    "get_S1_busy": {
+      "name": "get_S1_busy",
+      "expression": "PickA.server_count",
+      "description": "Busy servers at PickA"
+    },
+    "get_S2_busy": {
+      "name": "get_S2_busy",
+      "expression": "PickB.server_count",
+      "description": "Busy servers at PickB"
+    },
+    "get_S3_busy": {
+      "name": "get_S3_busy",
+      "expression": "Label.server_count",
+      "description": "Busy servers at Label"
+    },
+    "get_S4_busy": {
+      "name": "get_S4_busy",
+      "expression": "Scan.server_count",
+      "description": "Busy servers at Scan"
+    },
+    "get_S5_busy": {
+      "name": "get_S5_busy",
+      "expression": "Pack.server_count",
+      "description": "Busy servers at Pack"
+    },
+    "get_S6_busy": {
+      "name": "get_S6_busy",
+      "expression": "Release.server_count",
+      "description": "Busy servers at Release"
+    }
+  },
+  "statistics": [],
+  "stopping_condition": "sim_clocktime >= sim_end_time"
+}
