@@ -14,19 +14,19 @@ verification fork_join_4_eg_acd_msre:
         label queue_1_nonempty for EG: "queue_count_1 > 0"
         label queue_1_nonempty for ACD: "marking(Q_1) > 0"
         label server_1_busy for EG: "server_count_1 > 0"
-        label server_1_busy for ACD: "marking(S_1) < service_capacity"
+        label server_1_busy for ACD: "marking(S_1) < num_servers"
         label queue_2_nonempty for EG: "queue_count_2 > 0"
         label queue_2_nonempty for ACD: "marking(Q_2) > 0"
         label server_2_busy for EG: "server_count_2 > 0"
-        label server_2_busy for ACD: "marking(S_2) < service_capacity"
+        label server_2_busy for ACD: "marking(S_2) < num_servers"
         label queue_3_nonempty for EG: "queue_count_3 > 0"
         label queue_3_nonempty for ACD: "marking(Q_3) > 0"
         label server_3_busy for EG: "server_count_3 > 0"
-        label server_3_busy for ACD: "marking(S_3) < service_capacity"
+        label server_3_busy for ACD: "marking(S_3) < num_servers"
         label queue_4_nonempty for EG: "queue_count_4 > 0"
         label queue_4_nonempty for ACD: "marking(Q_4) > 0"
         label server_4_busy for EG: "server_count_4 > 0"
-        label server_4_busy for ACD: "marking(S_4) < service_capacity"
+        label server_4_busy for ACD: "marking(S_4) < num_servers"
     endlabels
 
     observables:

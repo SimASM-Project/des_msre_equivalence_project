@@ -13,7 +13,7 @@ verification feedback_1_acd_devs_msre:
     labels:
         label queue_1_nonempty for ACD: "marking(Q_1) > 0"
         label queue_1_nonempty for DEVS: "Server_1_queue_count > 0"
-        label server_1_busy for ACD: "marking(S_1) < service_capacity"
+        label server_1_busy for ACD: "marking(S_1) < num_servers"
         label server_1_busy for DEVS: "Server_1_server_count > 0"
     endlabels
 
