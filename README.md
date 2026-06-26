@@ -46,21 +46,25 @@ des_msre_equivalence_project/
 
 ## Quick Start
 
-### 1. Install dependencies
+### 1. Create and activate a virtual environment:
+     python -m venv venv
+     venv\Scripts\activate
+
+### 2. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Run a notebook
+### 3. Run a notebook
 
 ```bash
-jupyter notebook notebooks/tandem_msre.ipynb
+jupyter notebook notebooks/warehouse_msre.ipynb
 ```
 
 Run all cells. Each `%%simasm verify` cell checks one (topology, size, formalism pair) and prints **EQUIVALENT** on success.
 
-### 3. View pre-computed results
+### 4. View pre-computed results
 
 ```bash
 python scripts/extract_results.py
