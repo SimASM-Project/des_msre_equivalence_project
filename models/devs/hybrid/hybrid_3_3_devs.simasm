@@ -151,6 +151,7 @@ var service_time_Server_3: rnd.exponential(ist_mean) as "service_3"
 var service_time_Branch_1: rnd.exponential(ist_mean) as "branch_service_1"
 var service_time_Branch_2: rnd.exponential(ist_mean) as "branch_service_2"
 var service_time_Branch_3: rnd.exponential(ist_mean) as "branch_service_3"
+var feedback_decision: rnd.uniform(0.0, 1.0) as "feedback"
 
 // ============================================================
 // Observables
@@ -687,12 +688,12 @@ endrule
 rule external_transition_Router() =
     if phase_Router == "idle" then
         phase_Router := "routing"
-        Router_route_decision := rnd.uniform(0.0, 1.0)
+        Router_route_decision := feedback_decision
         tl_Router := sim_clocktime
         tn_Router := sim_clocktime + 0.0
     elseif phase_Router == "routing" then
         phase_Router := "routing"
-        Router_route_decision := rnd.uniform(0.0, 1.0)
+        Router_route_decision := feedback_decision
     endif
 endrule
 
