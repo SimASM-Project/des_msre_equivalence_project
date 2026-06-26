@@ -1,3 +1,3 @@
-simasm @ git+https://github.com/steveyeo/simasm.git
+simasm
 jupyter
 nbformat
