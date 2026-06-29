@@ -129,1153 +129,812 @@
   },
   "queues": {
     "C": {
-      "initial_tokens": 1,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Creator resource queue"
+      "description": "Creator resource queue",
+      "initial_marking": 1
     },
     "Q_1": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at station 1"
+      "description": "Job waiting queue at station 1",
+      "initial_marking": 0
     },
     "S_1": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at station 1"
+      "description": "Server resource queue at station 1",
+      "initial_marking": 5
     },
     "Q_2": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at station 2"
+      "description": "Job waiting queue at station 2",
+      "initial_marking": 0
     },
     "S_2": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at station 2"
+      "description": "Server resource queue at station 2",
+      "initial_marking": 5
     },
     "Q_3": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at station 3"
+      "description": "Job waiting queue at station 3",
+      "initial_marking": 0
     },
     "S_3": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at station 3"
+      "description": "Server resource queue at station 3",
+      "initial_marking": 5
     },
     "Q_4": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at station 4"
+      "description": "Job waiting queue at station 4",
+      "initial_marking": 0
     },
     "S_4": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at station 4"
+      "description": "Server resource queue at station 4",
+      "initial_marking": 5
     },
     "Q_5": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at station 5"
+      "description": "Job waiting queue at station 5",
+      "initial_marking": 0
     },
     "S_5": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at station 5"
+      "description": "Server resource queue at station 5",
+      "initial_marking": 5
     },
     "Q_6": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at station 6"
+      "description": "Job waiting queue at station 6",
+      "initial_marking": 0
     },
     "S_6": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at station 6"
+      "description": "Server resource queue at station 6",
+      "initial_marking": 5
     },
     "Q_7": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at station 7"
+      "description": "Job waiting queue at station 7",
+      "initial_marking": 0
     },
     "S_7": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at station 7"
+      "description": "Server resource queue at station 7",
+      "initial_marking": 5
     },
     "Q_8": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at station 8"
+      "description": "Job waiting queue at station 8",
+      "initial_marking": 0
     },
     "S_8": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at station 8"
+      "description": "Server resource queue at station 8",
+      "initial_marking": 5
     },
     "Q_9": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at station 9"
+      "description": "Job waiting queue at station 9",
+      "initial_marking": 0
     },
     "S_9": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at station 9"
+      "description": "Server resource queue at station 9",
+      "initial_marking": 5
     },
     "Q_10": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at station 10"
+      "description": "Job waiting queue at station 10",
+      "initial_marking": 0
     },
     "S_10": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at station 10"
+      "description": "Server resource queue at station 10",
+      "initial_marking": 5
     },
     "Q_11": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at station 11"
+      "description": "Job waiting queue at station 11",
+      "initial_marking": 0
     },
     "S_11": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at station 11"
+      "description": "Server resource queue at station 11",
+      "initial_marking": 5
     },
     "Q_12": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at station 12"
+      "description": "Job waiting queue at station 12",
+      "initial_marking": 0
     },
     "S_12": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at station 12"
+      "description": "Server resource queue at station 12",
+      "initial_marking": 5
     },
     "Q_13": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at station 13"
+      "description": "Job waiting queue at station 13",
+      "initial_marking": 0
     },
     "S_13": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at station 13"
+      "description": "Server resource queue at station 13",
+      "initial_marking": 5
     },
     "Q_14": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at station 14"
+      "description": "Job waiting queue at station 14",
+      "initial_marking": 0
     },
     "S_14": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at station 14"
+      "description": "Server resource queue at station 14",
+      "initial_marking": 5
     },
     "Q_15": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at station 15"
+      "description": "Job waiting queue at station 15",
+      "initial_marking": 0
     },
     "S_15": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at station 15"
+      "description": "Server resource queue at station 15",
+      "initial_marking": 5
     },
     "Q_16": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at station 16"
+      "description": "Job waiting queue at station 16",
+      "initial_marking": 0
     },
     "S_16": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at station 16"
+      "description": "Server resource queue at station 16",
+      "initial_marking": 5
     },
     "Q_17": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at station 17"
+      "description": "Job waiting queue at station 17",
+      "initial_marking": 0
     },
     "S_17": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at station 17"
+      "description": "Server resource queue at station 17",
+      "initial_marking": 5
     },
     "Q_18": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at station 18"
+      "description": "Job waiting queue at station 18",
+      "initial_marking": 0
     },
     "S_18": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at station 18"
+      "description": "Server resource queue at station 18",
+      "initial_marking": 5
     },
     "Q_19": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at station 19"
+      "description": "Job waiting queue at station 19",
+      "initial_marking": 0
     },
     "S_19": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at station 19"
+      "description": "Server resource queue at station 19",
+      "initial_marking": 5
     },
     "Q_20": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at station 20"
+      "description": "Job waiting queue at station 20",
+      "initial_marking": 0
     },
     "S_20": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at station 20"
+      "description": "Server resource queue at station 20",
+      "initial_marking": 5
     },
     "Jobs": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Completed jobs (sink)"
+      "description": "Completed jobs (sink)",
+      "initial_marking": 0
     }
   },
   "activities": [
     {
       "name": "Create",
       "priority": 2,
+      "description": "Job creation activity",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "C",
-            "count": 1,
-            "bind_as": "creator_token"
-          }
-        ],
-        "actions": []
+        "condition": "marking(C) >= 1",
+        "action": "C--",
+        "bind": [
+          "creator_token:C"
+        ]
+      },
+      "bto_event": {
+        "time": "duration_create",
+        "name": "Create_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "C",
-              "count": 1,
-              "token_source": "creator_token"
-            },
-            {
-              "queue": "Q_1",
-              "count": 1,
-              "token_source": "new"
-            }
-          ],
-          "actions": [
-            "job_id_counter := job_id_counter + 1"
+          "arc": 1,
+          "action": "C++ <- creator_token; Q_1++ <- new Job",
+          "accumulate": [
+            "job_id_counter += 1"
           ]
         }
-      ],
-      "description": "Job creation activity",
-      "duration": "duration_create"
+      ]
     },
     {
       "name": "Serve_1",
       "priority": 1,
+      "description": "Service activity at station 1",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_1",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_1",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_1) >= 1 and marking(Q_1) >= 1",
+        "action": "S_1--; Q_1--",
+        "bind": [
+          "server_token:S_1",
+          "job_token:Q_1"
         ],
-        "actions": [
-          "service_start_time_1(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_1 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_1",
+        "name": "Serve_1_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_1",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_2",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_1++ <- server_token; Q_2++ <- job_token"
         }
-      ],
-      "description": "Service activity at station 1",
-      "duration": "duration_serve_1"
+      ]
     },
     {
       "name": "Serve_2",
       "priority": 1,
+      "description": "Service activity at station 2",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_2",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_2",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_2) >= 1 and marking(Q_2) >= 1",
+        "action": "S_2--; Q_2--",
+        "bind": [
+          "server_token:S_2",
+          "job_token:Q_2"
         ],
-        "actions": [
-          "service_start_time_2(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_2 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_2",
+        "name": "Serve_2_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_2",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_3",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_2++ <- server_token; Q_3++ <- job_token"
         }
-      ],
-      "description": "Service activity at station 2",
-      "duration": "duration_serve_2"
+      ]
     },
     {
       "name": "Serve_3",
       "priority": 1,
+      "description": "Service activity at station 3",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_3",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_3",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_3) >= 1 and marking(Q_3) >= 1",
+        "action": "S_3--; Q_3--",
+        "bind": [
+          "server_token:S_3",
+          "job_token:Q_3"
         ],
-        "actions": [
-          "service_start_time_3(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_3 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_3",
+        "name": "Serve_3_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_3",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_4",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_3++ <- server_token; Q_4++ <- job_token"
         }
-      ],
-      "description": "Service activity at station 3",
-      "duration": "duration_serve_3"
+      ]
     },
     {
       "name": "Serve_4",
       "priority": 1,
+      "description": "Service activity at station 4",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_4",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_4",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_4) >= 1 and marking(Q_4) >= 1",
+        "action": "S_4--; Q_4--",
+        "bind": [
+          "server_token:S_4",
+          "job_token:Q_4"
         ],
-        "actions": [
-          "service_start_time_4(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_4 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_4",
+        "name": "Serve_4_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_4",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_5",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_4++ <- server_token; Q_5++ <- job_token"
         }
-      ],
-      "description": "Service activity at station 4",
-      "duration": "duration_serve_4"
+      ]
     },
     {
       "name": "Serve_5",
       "priority": 1,
+      "description": "Service activity at station 5",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_5",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_5",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_5) >= 1 and marking(Q_5) >= 1",
+        "action": "S_5--; Q_5--",
+        "bind": [
+          "server_token:S_5",
+          "job_token:Q_5"
         ],
-        "actions": [
-          "service_start_time_5(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_5 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_5",
+        "name": "Serve_5_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_5",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_6",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_5++ <- server_token; Q_6++ <- job_token"
         }
-      ],
-      "description": "Service activity at station 5",
-      "duration": "duration_serve_5"
+      ]
     },
     {
       "name": "Serve_6",
       "priority": 1,
+      "description": "Service activity at station 6",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_6",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_6",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_6) >= 1 and marking(Q_6) >= 1",
+        "action": "S_6--; Q_6--",
+        "bind": [
+          "server_token:S_6",
+          "job_token:Q_6"
         ],
-        "actions": [
-          "service_start_time_6(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_6 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_6",
+        "name": "Serve_6_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_6",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_7",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_6++ <- server_token; Q_7++ <- job_token"
         }
-      ],
-      "description": "Service activity at station 6",
-      "duration": "duration_serve_6"
+      ]
     },
     {
       "name": "Serve_7",
       "priority": 1,
+      "description": "Service activity at station 7",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_7",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_7",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_7) >= 1 and marking(Q_7) >= 1",
+        "action": "S_7--; Q_7--",
+        "bind": [
+          "server_token:S_7",
+          "job_token:Q_7"
         ],
-        "actions": [
-          "service_start_time_7(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_7 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_7",
+        "name": "Serve_7_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_7",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_8",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_7++ <- server_token; Q_8++ <- job_token"
         }
-      ],
-      "description": "Service activity at station 7",
-      "duration": "duration_serve_7"
+      ]
     },
     {
       "name": "Serve_8",
       "priority": 1,
+      "description": "Service activity at station 8",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_8",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_8",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_8) >= 1 and marking(Q_8) >= 1",
+        "action": "S_8--; Q_8--",
+        "bind": [
+          "server_token:S_8",
+          "job_token:Q_8"
         ],
-        "actions": [
-          "service_start_time_8(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_8 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_8",
+        "name": "Serve_8_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_8",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_9",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_8++ <- server_token; Q_9++ <- job_token"
         }
-      ],
-      "description": "Service activity at station 8",
-      "duration": "duration_serve_8"
+      ]
     },
     {
       "name": "Serve_9",
       "priority": 1,
+      "description": "Service activity at station 9",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_9",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_9",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_9) >= 1 and marking(Q_9) >= 1",
+        "action": "S_9--; Q_9--",
+        "bind": [
+          "server_token:S_9",
+          "job_token:Q_9"
         ],
-        "actions": [
-          "service_start_time_9(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_9 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_9",
+        "name": "Serve_9_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_9",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_10",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_9++ <- server_token; Q_10++ <- job_token"
         }
-      ],
-      "description": "Service activity at station 9",
-      "duration": "duration_serve_9"
+      ]
     },
     {
       "name": "Serve_10",
       "priority": 1,
+      "description": "Service activity at station 10",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_10",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_10",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_10) >= 1 and marking(Q_10) >= 1",
+        "action": "S_10--; Q_10--",
+        "bind": [
+          "server_token:S_10",
+          "job_token:Q_10"
         ],
-        "actions": [
-          "service_start_time_10(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_10 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_10",
+        "name": "Serve_10_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_10",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_11",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_10++ <- server_token; Q_11++ <- job_token"
         }
-      ],
-      "description": "Service activity at station 10",
-      "duration": "duration_serve_10"
+      ]
     },
     {
       "name": "Serve_11",
       "priority": 1,
+      "description": "Service activity at station 11",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_11",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_11",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_11) >= 1 and marking(Q_11) >= 1",
+        "action": "S_11--; Q_11--",
+        "bind": [
+          "server_token:S_11",
+          "job_token:Q_11"
         ],
-        "actions": [
-          "service_start_time_11(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_11 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_11",
+        "name": "Serve_11_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_11",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_12",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_11++ <- server_token; Q_12++ <- job_token"
         }
-      ],
-      "description": "Service activity at station 11",
-      "duration": "duration_serve_11"
+      ]
     },
     {
       "name": "Serve_12",
       "priority": 1,
+      "description": "Service activity at station 12",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_12",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_12",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_12) >= 1 and marking(Q_12) >= 1",
+        "action": "S_12--; Q_12--",
+        "bind": [
+          "server_token:S_12",
+          "job_token:Q_12"
         ],
-        "actions": [
-          "service_start_time_12(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_12 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_12",
+        "name": "Serve_12_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_12",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_13",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_12++ <- server_token; Q_13++ <- job_token"
         }
-      ],
-      "description": "Service activity at station 12",
-      "duration": "duration_serve_12"
+      ]
     },
     {
       "name": "Serve_13",
       "priority": 1,
+      "description": "Service activity at station 13",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_13",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_13",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_13) >= 1 and marking(Q_13) >= 1",
+        "action": "S_13--; Q_13--",
+        "bind": [
+          "server_token:S_13",
+          "job_token:Q_13"
         ],
-        "actions": [
-          "service_start_time_13(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_13 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_13",
+        "name": "Serve_13_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_13",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_14",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_13++ <- server_token; Q_14++ <- job_token"
         }
-      ],
-      "description": "Service activity at station 13",
-      "duration": "duration_serve_13"
+      ]
     },
     {
       "name": "Serve_14",
       "priority": 1,
+      "description": "Service activity at station 14",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_14",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_14",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_14) >= 1 and marking(Q_14) >= 1",
+        "action": "S_14--; Q_14--",
+        "bind": [
+          "server_token:S_14",
+          "job_token:Q_14"
         ],
-        "actions": [
-          "service_start_time_14(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_14 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_14",
+        "name": "Serve_14_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_14",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_15",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_14++ <- server_token; Q_15++ <- job_token"
         }
-      ],
-      "description": "Service activity at station 14",
-      "duration": "duration_serve_14"
+      ]
     },
     {
       "name": "Serve_15",
       "priority": 1,
+      "description": "Service activity at station 15",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_15",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_15",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_15) >= 1 and marking(Q_15) >= 1",
+        "action": "S_15--; Q_15--",
+        "bind": [
+          "server_token:S_15",
+          "job_token:Q_15"
         ],
-        "actions": [
-          "service_start_time_15(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_15 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_15",
+        "name": "Serve_15_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_15",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_16",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_15++ <- server_token; Q_16++ <- job_token"
         }
-      ],
-      "description": "Service activity at station 15",
-      "duration": "duration_serve_15"
+      ]
     },
     {
       "name": "Serve_16",
       "priority": 1,
+      "description": "Service activity at station 16",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_16",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_16",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_16) >= 1 and marking(Q_16) >= 1",
+        "action": "S_16--; Q_16--",
+        "bind": [
+          "server_token:S_16",
+          "job_token:Q_16"
         ],
-        "actions": [
-          "service_start_time_16(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_16 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_16",
+        "name": "Serve_16_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_16",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_17",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_16++ <- server_token; Q_17++ <- job_token"
         }
-      ],
-      "description": "Service activity at station 16",
-      "duration": "duration_serve_16"
+      ]
     },
     {
       "name": "Serve_17",
       "priority": 1,
+      "description": "Service activity at station 17",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_17",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_17",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_17) >= 1 and marking(Q_17) >= 1",
+        "action": "S_17--; Q_17--",
+        "bind": [
+          "server_token:S_17",
+          "job_token:Q_17"
         ],
-        "actions": [
-          "service_start_time_17(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_17 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_17",
+        "name": "Serve_17_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_17",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_18",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_17++ <- server_token; Q_18++ <- job_token"
         }
-      ],
-      "description": "Service activity at station 17",
-      "duration": "duration_serve_17"
+      ]
     },
     {
       "name": "Serve_18",
       "priority": 1,
+      "description": "Service activity at station 18",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_18",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_18",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_18) >= 1 and marking(Q_18) >= 1",
+        "action": "S_18--; Q_18--",
+        "bind": [
+          "server_token:S_18",
+          "job_token:Q_18"
         ],
-        "actions": [
-          "service_start_time_18(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_18 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_18",
+        "name": "Serve_18_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_18",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_19",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_18++ <- server_token; Q_19++ <- job_token"
         }
-      ],
-      "description": "Service activity at station 18",
-      "duration": "duration_serve_18"
+      ]
     },
     {
       "name": "Serve_19",
       "priority": 1,
+      "description": "Service activity at station 19",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_19",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_19",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_19) >= 1 and marking(Q_19) >= 1",
+        "action": "S_19--; Q_19--",
+        "bind": [
+          "server_token:S_19",
+          "job_token:Q_19"
         ],
-        "actions": [
-          "service_start_time_19(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_19 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_19",
+        "name": "Serve_19_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_19",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_20",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_19++ <- server_token; Q_20++ <- job_token"
         }
-      ],
-      "description": "Service activity at station 19",
-      "duration": "duration_serve_19"
+      ]
     },
     {
       "name": "Serve_20",
       "priority": 1,
+      "description": "Service activity at station 20 (with feedback)",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_20",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_20",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_20) >= 1 and marking(Q_20) >= 1",
+        "action": "S_20--; Q_20--",
+        "bind": [
+          "server_token:S_20",
+          "job_token:Q_20"
         ],
-        "actions": [
-          "service_start_time_20(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_20 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_20",
+        "name": "Serve_20_done"
       },
       "at_end": [
         {
-          "condition": "feedback",
-          "produce": [
-            {
-              "queue": "S_20",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_1",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_20++ <- server_token; Q_1++ <- job_token",
+          "condition": "feedback"
         },
         {
+          "arc": 2,
+          "action": "S_20++ <- server_token; Jobs++ <- job_token",
           "condition": "not_feedback",
-          "produce": [
-            {
-              "queue": "S_20",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Jobs",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": [
-            "departure_count := departure_count + 1"
+          "accumulate": [
+            "departure_count += 1"
           ]
         }
-      ],
-      "description": "Service activity at station 20 (with feedback)",
-      "duration": "duration_serve_20"
+      ]
     }
   ],
   "random_streams": {
@@ -1649,20 +1308,20 @@
     {
       "name": "L_q_total",
       "type": "time_average",
-      "expression": "marking(Q_1) + marking(Q_2) + marking(Q_3) + marking(Q_4) + marking(Q_5) + marking(Q_6) + marking(Q_7) + marking(Q_8) + marking(Q_9) + marking(Q_10) + marking(Q_11) + marking(Q_12) + marking(Q_13) + marking(Q_14) + marking(Q_15) + marking(Q_16) + marking(Q_17) + marking(Q_18) + marking(Q_19) + marking(Q_20)",
-      "description": "Average total queue length"
+      "description": "Average total queue length",
+      "observable": "marking(Q_1) + marking(Q_2) + marking(Q_3) + marking(Q_4) + marking(Q_5) + marking(Q_6) + marking(Q_7) + marking(Q_8) + marking(Q_9) + marking(Q_10) + marking(Q_11) + marking(Q_12) + marking(Q_13) + marking(Q_14) + marking(Q_15) + marking(Q_16) + marking(Q_17) + marking(Q_18) + marking(Q_19) + marking(Q_20)"
     },
     {
       "name": "L",
       "type": "time_average",
-      "expression": "marking(Q_1) + (num_servers - marking(S_1)) + marking(Q_2) + (num_servers - marking(S_2)) + marking(Q_3) + (num_servers - marking(S_3)) + marking(Q_4) + (num_servers - marking(S_4)) + marking(Q_5) + (num_servers - marking(S_5)) + marking(Q_6) + (num_servers - marking(S_6)) + marking(Q_7) + (num_servers - marking(S_7)) + marking(Q_8) + (num_servers - marking(S_8)) + marking(Q_9) + (num_servers - marking(S_9)) + marking(Q_10) + (num_servers - marking(S_10)) + marking(Q_11) + (num_servers - marking(S_11)) + marking(Q_12) + (num_servers - marking(S_12)) + marking(Q_13) + (num_servers - marking(S_13)) + marking(Q_14) + (num_servers - marking(S_14)) + marking(Q_15) + (num_servers - marking(S_15)) + marking(Q_16) + (num_servers - marking(S_16)) + marking(Q_17) + (num_servers - marking(S_17)) + marking(Q_18) + (num_servers - marking(S_18)) + marking(Q_19) + (num_servers - marking(S_19)) + marking(Q_20) + (num_servers - marking(S_20))",
-      "description": "Average number in system"
+      "description": "Average number in system",
+      "observable": "marking(Q_1) + (num_servers - marking(S_1)) + marking(Q_2) + (num_servers - marking(S_2)) + marking(Q_3) + (num_servers - marking(S_3)) + marking(Q_4) + (num_servers - marking(S_4)) + marking(Q_5) + (num_servers - marking(S_5)) + marking(Q_6) + (num_servers - marking(S_6)) + marking(Q_7) + (num_servers - marking(S_7)) + marking(Q_8) + (num_servers - marking(S_8)) + marking(Q_9) + (num_servers - marking(S_9)) + marking(Q_10) + (num_servers - marking(S_10)) + marking(Q_11) + (num_servers - marking(S_11)) + marking(Q_12) + (num_servers - marking(S_12)) + marking(Q_13) + (num_servers - marking(S_13)) + marking(Q_14) + (num_servers - marking(S_14)) + marking(Q_15) + (num_servers - marking(S_15)) + marking(Q_16) + (num_servers - marking(S_16)) + marking(Q_17) + (num_servers - marking(S_17)) + marking(Q_18) + (num_servers - marking(S_18)) + marking(Q_19) + (num_servers - marking(S_19)) + marking(Q_20) + (num_servers - marking(S_20))"
     },
     {
       "name": "throughput",
       "type": "count",
-      "expression": "departure_count",
-      "description": "Total departures"
+      "description": "Total departures",
+      "observable": "departure_count"
     }
   ]
 }

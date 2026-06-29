@@ -81,566 +81,395 @@
   },
   "queues": {
     "C": {
-      "initial_tokens": 1,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Creator resource queue"
+      "description": "Creator resource queue",
+      "initial_marking": 1
     },
     "Q_1": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at tandem station 1"
+      "description": "Job waiting queue at tandem station 1",
+      "initial_marking": 0
     },
     "S_1": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at tandem station 1"
+      "description": "Server resource queue at tandem station 1",
+      "initial_marking": 5
     },
     "Q_2": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at tandem station 2"
+      "description": "Job waiting queue at tandem station 2",
+      "initial_marking": 0
     },
     "S_2": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at tandem station 2"
+      "description": "Server resource queue at tandem station 2",
+      "initial_marking": 5
     },
     "Q_3": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at tandem station 3"
+      "description": "Job waiting queue at tandem station 3",
+      "initial_marking": 0
     },
     "S_3": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at tandem station 3"
+      "description": "Server resource queue at tandem station 3",
+      "initial_marking": 5
     },
     "Q_fork": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Pre-fork queue"
+      "description": "Pre-fork queue",
+      "initial_marking": 0
     },
     "BQ_1": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at branch 1"
+      "description": "Job waiting queue at branch 1",
+      "initial_marking": 0
     },
     "BS_1": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at branch 1"
+      "description": "Server resource queue at branch 1",
+      "initial_marking": 5
     },
     "P_1": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Part completion queue at branch 1"
+      "description": "Part completion queue at branch 1",
+      "initial_marking": 0
     },
     "BQ_2": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at branch 2"
+      "description": "Job waiting queue at branch 2",
+      "initial_marking": 0
     },
     "BS_2": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at branch 2"
+      "description": "Server resource queue at branch 2",
+      "initial_marking": 5
     },
     "P_2": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Part completion queue at branch 2"
+      "description": "Part completion queue at branch 2",
+      "initial_marking": 0
     },
     "BQ_3": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at branch 3"
+      "description": "Job waiting queue at branch 3",
+      "initial_marking": 0
     },
     "BS_3": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at branch 3"
+      "description": "Server resource queue at branch 3",
+      "initial_marking": 5
     },
     "P_3": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Part completion queue at branch 3"
+      "description": "Part completion queue at branch 3",
+      "initial_marking": 0
     },
     "BQ_4": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Job waiting queue at branch 4"
+      "description": "Job waiting queue at branch 4",
+      "initial_marking": 0
     },
     "BS_4": {
-      "initial_tokens": 5,
       "token_type": "Resource",
       "is_resource": true,
-      "description": "Server resource queue at branch 4"
+      "description": "Server resource queue at branch 4",
+      "initial_marking": 5
     },
     "P_4": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Part completion queue at branch 4"
+      "description": "Part completion queue at branch 4",
+      "initial_marking": 0
     },
     "Jobs": {
-      "initial_tokens": 0,
       "token_type": "Job",
       "is_resource": false,
-      "description": "Completed jobs (sink)"
+      "description": "Completed jobs (sink)",
+      "initial_marking": 0
     }
   },
   "activities": [
     {
       "name": "Create",
       "priority": 4,
+      "description": "Job creation activity",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "C",
-            "count": 1,
-            "bind_as": "creator_token"
-          }
-        ],
-        "actions": []
+        "condition": "marking(C) >= 1",
+        "action": "C--",
+        "bind": [
+          "creator_token:C"
+        ]
+      },
+      "bto_event": {
+        "time": "duration_create",
+        "name": "Create_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "C",
-              "count": 1,
-              "token_source": "creator_token"
-            },
-            {
-              "queue": "Q_1",
-              "count": 1,
-              "token_source": "new"
-            }
-          ],
-          "actions": [
-            "job_id_counter := job_id_counter + 1"
+          "arc": 1,
+          "action": "C++ <- creator_token; Q_1++ <- new Job",
+          "accumulate": [
+            "job_id_counter += 1"
           ]
         }
-      ],
-      "description": "Job creation activity",
-      "duration": "duration_create"
+      ]
     },
     {
       "name": "Serve_1",
       "priority": 3,
+      "description": "Service activity at tandem station 1",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_1",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_1",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_1) >= 1 and marking(Q_1) >= 1",
+        "action": "S_1--; Q_1--",
+        "bind": [
+          "server_token:S_1",
+          "job_token:Q_1"
         ],
-        "actions": [
-          "service_start_time_1(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_1 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_1",
+        "name": "Serve_1_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_1",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_2",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_1++ <- server_token; Q_2++ <- job_token"
         }
-      ],
-      "description": "Service activity at tandem station 1",
-      "duration": "duration_serve_1"
+      ]
     },
     {
       "name": "Serve_2",
       "priority": 3,
+      "description": "Service activity at tandem station 2",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_2",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_2",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_2) >= 1 and marking(Q_2) >= 1",
+        "action": "S_2--; Q_2--",
+        "bind": [
+          "server_token:S_2",
+          "job_token:Q_2"
         ],
-        "actions": [
-          "service_start_time_2(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_2 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_2",
+        "name": "Serve_2_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_2",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_3",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_2++ <- server_token; Q_3++ <- job_token"
         }
-      ],
-      "description": "Service activity at tandem station 2",
-      "duration": "duration_serve_2"
+      ]
     },
     {
       "name": "Serve_3",
       "priority": 3,
+      "description": "Service activity at tandem station 3",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "S_3",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "Q_3",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(S_3) >= 1 and marking(Q_3) >= 1",
+        "action": "S_3--; Q_3--",
+        "bind": [
+          "server_token:S_3",
+          "job_token:Q_3"
         ],
-        "actions": [
-          "service_start_time_3(job_token) := sim_clocktime"
+        "set": [
+          "job_token.service_start_time_3 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_serve_3",
+        "name": "Serve_3_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "S_3",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "Q_fork",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "S_3++ <- server_token; Q_fork++ <- job_token"
         }
-      ],
-      "description": "Service activity at tandem station 3",
-      "duration": "duration_serve_3"
+      ]
     },
     {
       "name": "Fork",
       "priority": 2,
+      "description": "Fork: distribute job to all branches",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "Q_fork",
-            "count": 1,
-            "bind_as": "fork_token"
-          }
-        ],
-        "actions": []
+        "condition": "marking(Q_fork) >= 1",
+        "action": "Q_fork--",
+        "bind": [
+          "fork_token:Q_fork"
+        ]
+      },
+      "bto_event": {
+        "time": "duration_fork",
+        "name": "Fork_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "BQ_1",
-              "count": 1,
-              "token_source": "new"
-            },
-            {
-              "queue": "BQ_2",
-              "count": 1,
-              "token_source": "new"
-            },
-            {
-              "queue": "BQ_3",
-              "count": 1,
-              "token_source": "new"
-            },
-            {
-              "queue": "BQ_4",
-              "count": 1,
-              "token_source": "new"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "BQ_1++ <- new Job; BQ_2++ <- new Job; BQ_3++ <- new Job; BQ_4++ <- new Job"
         }
-      ],
-      "description": "Fork: distribute job to all branches",
-      "duration": "duration_fork"
+      ]
     },
     {
       "name": "Branch_Serve_1",
       "priority": 1,
+      "description": "Service activity at branch 1",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "BS_1",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "BQ_1",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(BS_1) >= 1 and marking(BQ_1) >= 1",
+        "action": "BS_1--; BQ_1--",
+        "bind": [
+          "server_token:BS_1",
+          "job_token:BQ_1"
         ],
-        "actions": [
-          "branch_start_time_1(job_token) := sim_clocktime"
+        "set": [
+          "job_token.branch_start_time_1 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_branch_serve_1",
+        "name": "Branch_Serve_1_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "BS_1",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "P_1",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "BS_1++ <- server_token; P_1++ <- job_token"
         }
-      ],
-      "description": "Service activity at branch 1",
-      "duration": "duration_branch_serve_1"
+      ]
     },
     {
       "name": "Branch_Serve_2",
       "priority": 1,
+      "description": "Service activity at branch 2",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "BS_2",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "BQ_2",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(BS_2) >= 1 and marking(BQ_2) >= 1",
+        "action": "BS_2--; BQ_2--",
+        "bind": [
+          "server_token:BS_2",
+          "job_token:BQ_2"
         ],
-        "actions": [
-          "branch_start_time_2(job_token) := sim_clocktime"
+        "set": [
+          "job_token.branch_start_time_2 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_branch_serve_2",
+        "name": "Branch_Serve_2_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "BS_2",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "P_2",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "BS_2++ <- server_token; P_2++ <- job_token"
         }
-      ],
-      "description": "Service activity at branch 2",
-      "duration": "duration_branch_serve_2"
+      ]
     },
     {
       "name": "Branch_Serve_3",
       "priority": 1,
+      "description": "Service activity at branch 3",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "BS_3",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "BQ_3",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(BS_3) >= 1 and marking(BQ_3) >= 1",
+        "action": "BS_3--; BQ_3--",
+        "bind": [
+          "server_token:BS_3",
+          "job_token:BQ_3"
         ],
-        "actions": [
-          "branch_start_time_3(job_token) := sim_clocktime"
+        "set": [
+          "job_token.branch_start_time_3 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_branch_serve_3",
+        "name": "Branch_Serve_3_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "BS_3",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "P_3",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "BS_3++ <- server_token; P_3++ <- job_token"
         }
-      ],
-      "description": "Service activity at branch 3",
-      "duration": "duration_branch_serve_3"
+      ]
     },
     {
       "name": "Branch_Serve_4",
       "priority": 1,
+      "description": "Service activity at branch 4",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "BS_4",
-            "count": 1,
-            "bind_as": "server_token"
-          },
-          {
-            "queue": "BQ_4",
-            "count": 1,
-            "bind_as": "job_token"
-          }
+        "condition": "marking(BS_4) >= 1 and marking(BQ_4) >= 1",
+        "action": "BS_4--; BQ_4--",
+        "bind": [
+          "server_token:BS_4",
+          "job_token:BQ_4"
         ],
-        "actions": [
-          "branch_start_time_4(job_token) := sim_clocktime"
+        "set": [
+          "job_token.branch_start_time_4 = sim_clocktime"
         ]
+      },
+      "bto_event": {
+        "time": "duration_branch_serve_4",
+        "name": "Branch_Serve_4_done"
       },
       "at_end": [
         {
-          "condition": "true",
-          "produce": [
-            {
-              "queue": "BS_4",
-              "count": 1,
-              "token_source": "server_token"
-            },
-            {
-              "queue": "P_4",
-              "count": 1,
-              "token_source": "job_token"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "BS_4++ <- server_token; P_4++ <- job_token"
         }
-      ],
-      "description": "Service activity at branch 4",
-      "duration": "duration_branch_serve_4"
+      ]
     },
     {
       "name": "Join",
       "priority": 0,
+      "description": "Join: synchronize all branches (with feedback)",
       "at_begin": {
-        "condition": "true",
-        "consume": [
-          {
-            "queue": "P_1",
-            "count": 1,
-            "bind_as": "part_token_1"
-          },
-          {
-            "queue": "P_2",
-            "count": 1,
-            "bind_as": "part_token_2"
-          },
-          {
-            "queue": "P_3",
-            "count": 1,
-            "bind_as": "part_token_3"
-          },
-          {
-            "queue": "P_4",
-            "count": 1,
-            "bind_as": "part_token_4"
-          }
-        ],
-        "actions": []
+        "condition": "marking(P_1) >= 1 and marking(P_2) >= 1 and marking(P_3) >= 1 and marking(P_4) >= 1",
+        "action": "P_1--; P_2--; P_3--; P_4--",
+        "bind": [
+          "part_token_1:P_1",
+          "part_token_2:P_2",
+          "part_token_3:P_3",
+          "part_token_4:P_4"
+        ]
+      },
+      "bto_event": {
+        "time": "duration_join",
+        "name": "Join_done"
       },
       "at_end": [
         {
-          "condition": "feedback",
-          "produce": [
-            {
-              "queue": "Q_1",
-              "count": 1,
-              "token_source": "new"
-            }
-          ],
-          "actions": []
+          "arc": 1,
+          "action": "Q_1++ <- new Job",
+          "condition": "feedback"
         },
         {
+          "arc": 2,
+          "action": "Jobs++ <- new Job",
           "condition": "not_feedback",
-          "produce": [
-            {
-              "queue": "Jobs",
-              "count": 1,
-              "token_source": "new"
-            }
-          ],
-          "actions": [
-            "departure_count := departure_count + 1"
+          "accumulate": [
+            "departure_count += 1"
           ]
         }
-      ],
-      "description": "Join: synchronize all branches (with feedback)",
-      "duration": "duration_join"
+      ]
     }
   ],
   "random_streams": {
@@ -817,20 +646,20 @@
     {
       "name": "L_q_total",
       "type": "time_average",
-      "expression": "marking(Q_1) + marking(Q_2) + marking(Q_3) + marking(BQ_1) + marking(BQ_2) + marking(BQ_3) + marking(BQ_4)",
-      "description": "Average total queue length"
+      "description": "Average total queue length",
+      "observable": "marking(Q_1) + marking(Q_2) + marking(Q_3) + marking(BQ_1) + marking(BQ_2) + marking(BQ_3) + marking(BQ_4)"
     },
     {
       "name": "L",
       "type": "time_average",
-      "expression": "marking(Q_1) + (num_servers - marking(S_1)) + marking(Q_2) + (num_servers - marking(S_2)) + marking(Q_3) + (num_servers - marking(S_3)) + marking(BQ_1) + (num_servers - marking(BS_1)) + marking(P_1) + marking(BQ_2) + (num_servers - marking(BS_2)) + marking(P_2) + marking(BQ_3) + (num_servers - marking(BS_3)) + marking(P_3) + marking(BQ_4) + (num_servers - marking(BS_4)) + marking(P_4)",
-      "description": "Average number in system"
+      "description": "Average number in system",
+      "observable": "marking(Q_1) + (num_servers - marking(S_1)) + marking(Q_2) + (num_servers - marking(S_2)) + marking(Q_3) + (num_servers - marking(S_3)) + marking(BQ_1) + (num_servers - marking(BS_1)) + marking(P_1) + marking(BQ_2) + (num_servers - marking(BS_2)) + marking(P_2) + marking(BQ_3) + (num_servers - marking(BS_3)) + marking(P_3) + marking(BQ_4) + (num_servers - marking(BS_4)) + marking(P_4)"
     },
     {
       "name": "throughput",
       "type": "count",
-      "expression": "departure_count",
-      "description": "Total departures"
+      "description": "Total departures",
+      "observable": "departure_count"
     }
   ]
 }
