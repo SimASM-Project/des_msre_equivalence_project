@@ -1,0 +1,318 @@
+{
+  "model_name": "feedback_2_acd",
+  "description": "Feedback 2-Queue using Activity Cycle Diagram - 2 stations in tandem with 50% feedback",
+  "parameters": {
+    "num_servers": {
+      "type": "Nat",
+      "value": 5,
+      "description": "Number of servers per station"
+    },
+    "iat_mean": {
+      "type": "Real",
+      "value": 1.25,
+      "description": "Inter-arrival time mean"
+    },
+    "ist_mean": {
+      "type": "Real",
+      "value": 1.0,
+      "description": "Service time mean per station"
+    },
+    "feedback_prob": {
+      "type": "Real",
+      "value": 0.5,
+      "description": "Probability of feedback to station 1"
+    },
+    "sim_end_time": {
+      "type": "Real",
+      "value": 10000.0,
+      "description": "Simulation end time"
+    }
+  },
+  "token_types": {
+    "Job": {
+      "name": "Job",
+      "parent": "Token",
+      "attributes": {
+        "arrival_time": {
+          "type": "Real",
+          "description": "Time job arrived"
+        },
+        "service_start_time_1": {
+          "type": "Real",
+          "description": "Time job started service at station 1"
+        },
+        "service_start_time_2": {
+          "type": "Real",
+          "description": "Time job started service at station 2"
+        }
+      },
+      "description": "Customer job token"
+    },
+    "Resource": {
+      "name": "Resource",
+      "parent": "Token",
+      "attributes": {},
+      "description": "Reusable resource token"
+    }
+  },
+  "queues": {
+    "C": {
+      "initial_tokens": 1,
+      "token_type": "Resource",
+      "is_resource": true,
+      "description": "Creator resource queue"
+    },
+    "Q_1": {
+      "initial_tokens": 0,
+      "token_type": "Job",
+      "is_resource": false,
+      "description": "Job waiting queue at station 1"
+    },
+    "S_1": {
+      "initial_tokens": 5,
+      "token_type": "Resource",
+      "is_resource": true,
+      "description": "Server resource queue at station 1"
+    },
+    "Q_2": {
+      "initial_tokens": 0,
+      "token_type": "Job",
+      "is_resource": false,
+      "description": "Job waiting queue at station 2"
+    },
+    "S_2": {
+      "initial_tokens": 5,
+      "token_type": "Resource",
+      "is_resource": true,
+      "description": "Server resource queue at station 2"
+    },
+    "Jobs": {
+      "initial_tokens": 0,
+      "token_type": "Job",
+      "is_resource": false,
+      "description": "Completed jobs (sink)"
+    }
+  },
+  "activities": [
+    {
+      "name": "Create",
+      "priority": 2,
+      "at_begin": {
+        "condition": "true",
+        "consume": [
+          {
+            "queue": "C",
+            "count": 1,
+            "bind_as": "creator_token"
+          }
+        ],
+        "actions": []
+      },
+      "at_end": [
+        {
+          "condition": "true",
+          "produce": [
+            {
+              "queue": "C",
+              "count": 1,
+              "token_source": "creator_token"
+            },
+            {
+              "queue": "Q_1",
+              "count": 1,
+              "token_source": "new"
+            }
+          ],
+          "actions": [
+            "job_id_counter := job_id_counter + 1"
+          ]
+        }
+      ],
+      "description": "Job creation activity",
+      "duration": "duration_create"
+    },
+    {
+      "name": "Serve_1",
+      "priority": 1,
+      "at_begin": {
+        "condition": "true",
+        "consume": [
+          {
+            "queue": "S_1",
+            "count": 1,
+            "bind_as": "server_token"
+          },
+          {
+            "queue": "Q_1",
+            "count": 1,
+            "bind_as": "job_token"
+          }
+        ],
+        "actions": [
+          "service_start_time_1(job_token) := sim_clocktime"
+        ]
+      },
+      "at_end": [
+        {
+          "condition": "true",
+          "produce": [
+            {
+              "queue": "S_1",
+              "count": 1,
+              "token_source": "server_token"
+            },
+            {
+              "queue": "Q_2",
+              "count": 1,
+              "token_source": "job_token"
+            }
+          ],
+          "actions": []
+        }
+      ],
+      "description": "Service activity at station 1",
+      "duration": "duration_serve_1"
+    },
+    {
+      "name": "Serve_2",
+      "priority": 1,
+      "at_begin": {
+        "condition": "true",
+        "consume": [
+          {
+            "queue": "S_2",
+            "count": 1,
+            "bind_as": "server_token"
+          },
+          {
+            "queue": "Q_2",
+            "count": 1,
+            "bind_as": "job_token"
+          }
+        ],
+        "actions": [
+          "service_start_time_2(job_token) := sim_clocktime"
+        ]
+      },
+      "at_end": [
+        {
+          "condition": "feedback",
+          "produce": [
+            {
+              "queue": "S_2",
+              "count": 1,
+              "token_source": "server_token"
+            },
+            {
+              "queue": "Q_1",
+              "count": 1,
+              "token_source": "job_token"
+            }
+          ],
+          "actions": []
+        },
+        {
+          "condition": "not_feedback",
+          "produce": [
+            {
+              "queue": "S_2",
+              "count": 1,
+              "token_source": "server_token"
+            },
+            {
+              "queue": "Jobs",
+              "count": 1,
+              "token_source": "job_token"
+            }
+          ],
+          "actions": [
+            "departure_count := departure_count + 1"
+          ]
+        }
+      ],
+      "description": "Service activity at station 2 (with feedback)",
+      "duration": "duration_serve_2"
+    }
+  ],
+  "random_streams": {
+    "duration_create": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "iat_mean"
+      },
+      "stream_name": "arrivals"
+    },
+    "duration_serve_1": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "ist_mean"
+      },
+      "stream_name": "service_1"
+    },
+    "duration_serve_2": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "ist_mean"
+      },
+      "stream_name": "service_2"
+    }
+  },
+  "state_variables": {
+    "job_id_counter": {
+      "type": "Nat",
+      "initial": 0
+    },
+    "departure_count": {
+      "type": "Nat",
+      "initial": 0
+    }
+  },
+  "stopping_condition": "sim_clocktime >= sim_end_time",
+  "observables": {
+    "queue_count_1": {
+      "name": "queue_count_1",
+      "expression": "marking(Q_1)",
+      "description": "Number in queue at station 1"
+    },
+    "server_count_1": {
+      "name": "server_count_1",
+      "expression": "num_servers - marking(S_1)",
+      "description": "Number of busy servers at station 1"
+    },
+    "queue_count_2": {
+      "name": "queue_count_2",
+      "expression": "marking(Q_2)",
+      "description": "Number in queue at station 2"
+    },
+    "server_count_2": {
+      "name": "server_count_2",
+      "expression": "num_servers - marking(S_2)",
+      "description": "Number of busy servers at station 2"
+    },
+    "in_system": {
+      "name": "in_system",
+      "expression": "marking(Q_1) + (num_servers - marking(S_1)) + marking(Q_2) + (num_servers - marking(S_2))",
+      "description": "Total in system"
+    }
+  },
+  "statistics": [
+    {
+      "name": "L_q_total",
+      "type": "time_average",
+      "expression": "marking(Q_1) + marking(Q_2)",
+      "description": "Average total queue length"
+    },
+    {
+      "name": "L",
+      "type": "time_average",
+      "expression": "marking(Q_1) + (num_servers - marking(S_1)) + marking(Q_2) + (num_servers - marking(S_2))",
+      "description": "Average number in system"
+    },
+    {
+      "name": "throughput",
+      "type": "count",
+      "expression": "departure_count",
+      "description": "Total departures"
+    }
+  ]
+}

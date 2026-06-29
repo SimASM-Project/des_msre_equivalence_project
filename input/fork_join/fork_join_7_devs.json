@@ -1,0 +1,1271 @@
+{
+  "model_name": "fork_join_7_devs",
+  "description": "Fork-Join 7-Queue using DEVS formalism - 7 parallel branches with synchronizing join",
+  "entities": {
+    "Load": {
+      "name": "Load",
+      "parent": "Object",
+      "attributes": {
+        "arrival_time": "Real",
+        "service_start_time_1": "Real",
+        "service_start_time_2": "Real",
+        "service_start_time_3": "Real",
+        "service_start_time_4": "Real",
+        "service_start_time_5": "Real",
+        "service_start_time_6": "Real",
+        "service_start_time_7": "Real",
+        "join_time": "Real",
+        "departure_time": "Real"
+      }
+    }
+  },
+  "parameters": {
+    "service_capacity": {
+      "type": "Nat",
+      "value": 1,
+      "description": "Number of servers per branch"
+    },
+    "iat_mean": {
+      "type": "Real",
+      "value": 1.25,
+      "description": "Inter-arrival time mean"
+    },
+    "ist_mean": {
+      "type": "Real",
+      "value": 1.0,
+      "description": "Service time mean per branch"
+    },
+    "sim_end_time": {
+      "type": "Real",
+      "value": 10000.0,
+      "description": "Simulation end time"
+    }
+  },
+  "random_streams": {
+    "interarrival_time": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "iat_mean"
+      },
+      "stream_name": "arrivals"
+    },
+    "service_time_1": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "ist_mean"
+      },
+      "stream_name": "service_1"
+    },
+    "service_time_2": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "ist_mean"
+      },
+      "stream_name": "service_2"
+    },
+    "service_time_3": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "ist_mean"
+      },
+      "stream_name": "service_3"
+    },
+    "service_time_4": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "ist_mean"
+      },
+      "stream_name": "service_4"
+    },
+    "service_time_5": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "ist_mean"
+      },
+      "stream_name": "service_5"
+    },
+    "service_time_6": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "ist_mean"
+      },
+      "stream_name": "service_6"
+    },
+    "service_time_7": {
+      "distribution": "exponential",
+      "params": {
+        "mean": "ist_mean"
+      },
+      "stream_name": "service_7"
+    }
+  },
+  "atomic_models": [
+    {
+      "name": "Generator",
+      "description": "Job generator (source)",
+      "inputs": [],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "active",
+          "time_advance": "interarrival_time"
+        }
+      ],
+      "initial_state": "active",
+      "state_variables": {
+        "job_count": {
+          "type": "Nat",
+          "initial": 0
+        }
+      },
+      "internal_transitions": [
+        {
+          "from": "active",
+          "to": "active",
+          "state_change": "job_count := job_count + 1"
+        }
+      ],
+      "external_transitions": [],
+      "output_function": [
+        {
+          "state": "active",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Forker",
+      "description": "Replicates each arriving job to all parallel branches",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "idle",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "forking",
+          "time_advance": 0
+        }
+      ],
+      "initial_state": "idle",
+      "state_variables": {},
+      "internal_transitions": [
+        {
+          "from": "forking",
+          "to": "idle"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "forking"
+        },
+        {
+          "from": "forking",
+          "input_port": "in",
+          "to": "forking"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "forking",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Branch_Server_1",
+      "description": "Single-server queue-processor at branch 1",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "starting",
+          "time_advance": 0
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_1"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {
+        "queue_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "server_count": {
+          "type": "Nat",
+          "initial": 0
+        }
+      },
+      "internal_transitions": [
+        {
+          "from": "starting",
+          "to": "busy",
+          "state_change": "queue_count := queue_count - 1; server_count := server_count + 1"
+        },
+        {
+          "from": "busy",
+          "to": "starting",
+          "condition": "queue_count > 0",
+          "state_change": "server_count := server_count - 1"
+        },
+        {
+          "from": "busy",
+          "to": "passive",
+          "condition": "queue_count == 0",
+          "state_change": "server_count := server_count - 1"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "starting",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "starting",
+          "input_port": "in",
+          "to": "starting",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "busy",
+          "input_port": "in",
+          "to": "busy",
+          "state_change": "queue_count := queue_count + 1"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Branch_Server_2",
+      "description": "Single-server queue-processor at branch 2",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "starting",
+          "time_advance": 0
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_2"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {
+        "queue_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "server_count": {
+          "type": "Nat",
+          "initial": 0
+        }
+      },
+      "internal_transitions": [
+        {
+          "from": "starting",
+          "to": "busy",
+          "state_change": "queue_count := queue_count - 1; server_count := server_count + 1"
+        },
+        {
+          "from": "busy",
+          "to": "starting",
+          "condition": "queue_count > 0",
+          "state_change": "server_count := server_count - 1"
+        },
+        {
+          "from": "busy",
+          "to": "passive",
+          "condition": "queue_count == 0",
+          "state_change": "server_count := server_count - 1"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "starting",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "starting",
+          "input_port": "in",
+          "to": "starting",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "busy",
+          "input_port": "in",
+          "to": "busy",
+          "state_change": "queue_count := queue_count + 1"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Branch_Server_3",
+      "description": "Single-server queue-processor at branch 3",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "starting",
+          "time_advance": 0
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_3"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {
+        "queue_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "server_count": {
+          "type": "Nat",
+          "initial": 0
+        }
+      },
+      "internal_transitions": [
+        {
+          "from": "starting",
+          "to": "busy",
+          "state_change": "queue_count := queue_count - 1; server_count := server_count + 1"
+        },
+        {
+          "from": "busy",
+          "to": "starting",
+          "condition": "queue_count > 0",
+          "state_change": "server_count := server_count - 1"
+        },
+        {
+          "from": "busy",
+          "to": "passive",
+          "condition": "queue_count == 0",
+          "state_change": "server_count := server_count - 1"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "starting",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "starting",
+          "input_port": "in",
+          "to": "starting",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "busy",
+          "input_port": "in",
+          "to": "busy",
+          "state_change": "queue_count := queue_count + 1"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Branch_Server_4",
+      "description": "Single-server queue-processor at branch 4",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "starting",
+          "time_advance": 0
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_4"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {
+        "queue_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "server_count": {
+          "type": "Nat",
+          "initial": 0
+        }
+      },
+      "internal_transitions": [
+        {
+          "from": "starting",
+          "to": "busy",
+          "state_change": "queue_count := queue_count - 1; server_count := server_count + 1"
+        },
+        {
+          "from": "busy",
+          "to": "starting",
+          "condition": "queue_count > 0",
+          "state_change": "server_count := server_count - 1"
+        },
+        {
+          "from": "busy",
+          "to": "passive",
+          "condition": "queue_count == 0",
+          "state_change": "server_count := server_count - 1"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "starting",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "starting",
+          "input_port": "in",
+          "to": "starting",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "busy",
+          "input_port": "in",
+          "to": "busy",
+          "state_change": "queue_count := queue_count + 1"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Branch_Server_5",
+      "description": "Single-server queue-processor at branch 5",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "starting",
+          "time_advance": 0
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_5"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {
+        "queue_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "server_count": {
+          "type": "Nat",
+          "initial": 0
+        }
+      },
+      "internal_transitions": [
+        {
+          "from": "starting",
+          "to": "busy",
+          "state_change": "queue_count := queue_count - 1; server_count := server_count + 1"
+        },
+        {
+          "from": "busy",
+          "to": "starting",
+          "condition": "queue_count > 0",
+          "state_change": "server_count := server_count - 1"
+        },
+        {
+          "from": "busy",
+          "to": "passive",
+          "condition": "queue_count == 0",
+          "state_change": "server_count := server_count - 1"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "starting",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "starting",
+          "input_port": "in",
+          "to": "starting",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "busy",
+          "input_port": "in",
+          "to": "busy",
+          "state_change": "queue_count := queue_count + 1"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Branch_Server_6",
+      "description": "Single-server queue-processor at branch 6",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "starting",
+          "time_advance": 0
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_6"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {
+        "queue_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "server_count": {
+          "type": "Nat",
+          "initial": 0
+        }
+      },
+      "internal_transitions": [
+        {
+          "from": "starting",
+          "to": "busy",
+          "state_change": "queue_count := queue_count - 1; server_count := server_count + 1"
+        },
+        {
+          "from": "busy",
+          "to": "starting",
+          "condition": "queue_count > 0",
+          "state_change": "server_count := server_count - 1"
+        },
+        {
+          "from": "busy",
+          "to": "passive",
+          "condition": "queue_count == 0",
+          "state_change": "server_count := server_count - 1"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "starting",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "starting",
+          "input_port": "in",
+          "to": "starting",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "busy",
+          "input_port": "in",
+          "to": "busy",
+          "state_change": "queue_count := queue_count + 1"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Branch_Server_7",
+      "description": "Single-server queue-processor at branch 7",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "passive",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "starting",
+          "time_advance": 0
+        },
+        {
+          "name": "busy",
+          "time_advance": "service_time_7"
+        }
+      ],
+      "initial_state": "passive",
+      "state_variables": {
+        "queue_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "server_count": {
+          "type": "Nat",
+          "initial": 0
+        }
+      },
+      "internal_transitions": [
+        {
+          "from": "starting",
+          "to": "busy",
+          "state_change": "queue_count := queue_count - 1; server_count := server_count + 1"
+        },
+        {
+          "from": "busy",
+          "to": "starting",
+          "condition": "queue_count > 0",
+          "state_change": "server_count := server_count - 1"
+        },
+        {
+          "from": "busy",
+          "to": "passive",
+          "condition": "queue_count == 0",
+          "state_change": "server_count := server_count - 1"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "passive",
+          "input_port": "in",
+          "to": "starting",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "starting",
+          "input_port": "in",
+          "to": "starting",
+          "state_change": "queue_count := queue_count + 1"
+        },
+        {
+          "from": "busy",
+          "input_port": "in",
+          "to": "busy",
+          "state_change": "queue_count := queue_count + 1"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "busy",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Joiner",
+      "description": "Synchronizes completed parts from 7 parallel branches",
+      "inputs": [
+        "in_1",
+        "in_2",
+        "in_3",
+        "in_4",
+        "in_5",
+        "in_6",
+        "in_7"
+      ],
+      "outputs": [
+        "out"
+      ],
+      "states": [
+        {
+          "name": "idle",
+          "time_advance": "infinity"
+        },
+        {
+          "name": "checking",
+          "time_advance": 0
+        },
+        {
+          "name": "joining",
+          "time_advance": 0
+        }
+      ],
+      "initial_state": "idle",
+      "state_variables": {
+        "part_1_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "part_2_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "part_3_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "part_4_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "part_5_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "part_6_count": {
+          "type": "Nat",
+          "initial": 0
+        },
+        "part_7_count": {
+          "type": "Nat",
+          "initial": 0
+        }
+      },
+      "internal_transitions": [
+        {
+          "from": "checking",
+          "to": "joining",
+          "condition": "part_1_count > 0 and part_2_count > 0 and part_3_count > 0 and part_4_count > 0 and part_5_count > 0 and part_6_count > 0 and part_7_count > 0"
+        },
+        {
+          "from": "checking",
+          "to": "idle",
+          "condition": "not (part_1_count > 0 and part_2_count > 0 and part_3_count > 0 and part_4_count > 0 and part_5_count > 0 and part_6_count > 0 and part_7_count > 0)"
+        },
+        {
+          "from": "joining",
+          "to": "idle",
+          "state_change": "part_1_count := part_1_count - 1; part_2_count := part_2_count - 1; part_3_count := part_3_count - 1; part_4_count := part_4_count - 1; part_5_count := part_5_count - 1; part_6_count := part_6_count - 1; part_7_count := part_7_count - 1"
+        }
+      ],
+      "external_transitions": [
+        {
+          "from": "idle",
+          "input_port": "in_1",
+          "to": "checking",
+          "state_change": "part_1_count := part_1_count + 1"
+        },
+        {
+          "from": "checking",
+          "input_port": "in_1",
+          "to": "checking",
+          "state_change": "part_1_count := part_1_count + 1"
+        },
+        {
+          "from": "joining",
+          "input_port": "in_1",
+          "to": "checking",
+          "state_change": "part_1_count := part_1_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in_2",
+          "to": "checking",
+          "state_change": "part_2_count := part_2_count + 1"
+        },
+        {
+          "from": "checking",
+          "input_port": "in_2",
+          "to": "checking",
+          "state_change": "part_2_count := part_2_count + 1"
+        },
+        {
+          "from": "joining",
+          "input_port": "in_2",
+          "to": "checking",
+          "state_change": "part_2_count := part_2_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in_3",
+          "to": "checking",
+          "state_change": "part_3_count := part_3_count + 1"
+        },
+        {
+          "from": "checking",
+          "input_port": "in_3",
+          "to": "checking",
+          "state_change": "part_3_count := part_3_count + 1"
+        },
+        {
+          "from": "joining",
+          "input_port": "in_3",
+          "to": "checking",
+          "state_change": "part_3_count := part_3_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in_4",
+          "to": "checking",
+          "state_change": "part_4_count := part_4_count + 1"
+        },
+        {
+          "from": "checking",
+          "input_port": "in_4",
+          "to": "checking",
+          "state_change": "part_4_count := part_4_count + 1"
+        },
+        {
+          "from": "joining",
+          "input_port": "in_4",
+          "to": "checking",
+          "state_change": "part_4_count := part_4_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in_5",
+          "to": "checking",
+          "state_change": "part_5_count := part_5_count + 1"
+        },
+        {
+          "from": "checking",
+          "input_port": "in_5",
+          "to": "checking",
+          "state_change": "part_5_count := part_5_count + 1"
+        },
+        {
+          "from": "joining",
+          "input_port": "in_5",
+          "to": "checking",
+          "state_change": "part_5_count := part_5_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in_6",
+          "to": "checking",
+          "state_change": "part_6_count := part_6_count + 1"
+        },
+        {
+          "from": "checking",
+          "input_port": "in_6",
+          "to": "checking",
+          "state_change": "part_6_count := part_6_count + 1"
+        },
+        {
+          "from": "joining",
+          "input_port": "in_6",
+          "to": "checking",
+          "state_change": "part_6_count := part_6_count + 1"
+        },
+        {
+          "from": "idle",
+          "input_port": "in_7",
+          "to": "checking",
+          "state_change": "part_7_count := part_7_count + 1"
+        },
+        {
+          "from": "checking",
+          "input_port": "in_7",
+          "to": "checking",
+          "state_change": "part_7_count := part_7_count + 1"
+        },
+        {
+          "from": "joining",
+          "input_port": "in_7",
+          "to": "checking",
+          "state_change": "part_7_count := part_7_count + 1"
+        }
+      ],
+      "output_function": [
+        {
+          "state": "joining",
+          "output_port": "out",
+          "value": "job"
+        }
+      ]
+    },
+    {
+      "name": "Sink",
+      "description": "Job sink (absorbs completed jobs)",
+      "inputs": [
+        "in"
+      ],
+      "outputs": [],
+      "states": [
+        {
+          "name": "idle",
+          "time_advance": "infinity"
+        }
+      ],
+      "initial_state": "idle",
+      "state_variables": {
+        "departure_count": {
+          "type": "Nat",
+          "initial": 0
+        }
+      },
+      "internal_transitions": [],
+      "external_transitions": [
+        {
+          "from": "idle",
+          "input_port": "in",
+          "to": "idle",
+          "state_change": "departure_count := departure_count + 1"
+        }
+      ],
+      "output_function": []
+    }
+  ],
+  "coupled_model": {
+    "name": "ForkJoinQueue",
+    "components": [
+      "Generator",
+      "Forker",
+      "Branch_Server_1",
+      "Branch_Server_2",
+      "Branch_Server_3",
+      "Branch_Server_4",
+      "Branch_Server_5",
+      "Branch_Server_6",
+      "Branch_Server_7",
+      "Joiner",
+      "Sink"
+    ],
+    "internal_couplings": [
+      {
+        "from_model": "Generator",
+        "from_port": "out",
+        "to_model": "Forker",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Forker",
+        "from_port": "out",
+        "to_model": "Branch_Server_1",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Forker",
+        "from_port": "out",
+        "to_model": "Branch_Server_2",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Forker",
+        "from_port": "out",
+        "to_model": "Branch_Server_3",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Forker",
+        "from_port": "out",
+        "to_model": "Branch_Server_4",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Forker",
+        "from_port": "out",
+        "to_model": "Branch_Server_5",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Forker",
+        "from_port": "out",
+        "to_model": "Branch_Server_6",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Forker",
+        "from_port": "out",
+        "to_model": "Branch_Server_7",
+        "to_port": "in"
+      },
+      {
+        "from_model": "Branch_Server_1",
+        "from_port": "out",
+        "to_model": "Joiner",
+        "to_port": "in_1"
+      },
+      {
+        "from_model": "Branch_Server_2",
+        "from_port": "out",
+        "to_model": "Joiner",
+        "to_port": "in_2"
+      },
+      {
+        "from_model": "Branch_Server_3",
+        "from_port": "out",
+        "to_model": "Joiner",
+        "to_port": "in_3"
+      },
+      {
+        "from_model": "Branch_Server_4",
+        "from_port": "out",
+        "to_model": "Joiner",
+        "to_port": "in_4"
+      },
+      {
+        "from_model": "Branch_Server_5",
+        "from_port": "out",
+        "to_model": "Joiner",
+        "to_port": "in_5"
+      },
+      {
+        "from_model": "Branch_Server_6",
+        "from_port": "out",
+        "to_model": "Joiner",
+        "to_port": "in_6"
+      },
+      {
+        "from_model": "Branch_Server_7",
+        "from_port": "out",
+        "to_model": "Joiner",
+        "to_port": "in_7"
+      },
+      {
+        "from_model": "Joiner",
+        "from_port": "out",
+        "to_model": "Sink",
+        "to_port": "in"
+      }
+    ],
+    "external_input_couplings": [],
+    "external_output_couplings": [],
+    "select_priority": [
+      "Generator",
+      "Forker",
+      "Branch_Server_1",
+      "Branch_Server_2",
+      "Branch_Server_3",
+      "Branch_Server_4",
+      "Branch_Server_5",
+      "Branch_Server_6",
+      "Branch_Server_7",
+      "Joiner",
+      "Sink"
+    ]
+  },
+  "state_variables": {},
+  "observables": {
+    "queue_count_1": {
+      "name": "queue_count_1",
+      "expression": "Branch_Server_1.queue_count",
+      "description": "Number in queue at branch 1"
+    },
+    "server_count_1": {
+      "name": "server_count_1",
+      "expression": "Branch_Server_1.server_count",
+      "description": "Number of busy servers at branch 1"
+    },
+    "queue_count_2": {
+      "name": "queue_count_2",
+      "expression": "Branch_Server_2.queue_count",
+      "description": "Number in queue at branch 2"
+    },
+    "server_count_2": {
+      "name": "server_count_2",
+      "expression": "Branch_Server_2.server_count",
+      "description": "Number of busy servers at branch 2"
+    },
+    "queue_count_3": {
+      "name": "queue_count_3",
+      "expression": "Branch_Server_3.queue_count",
+      "description": "Number in queue at branch 3"
+    },
+    "server_count_3": {
+      "name": "server_count_3",
+      "expression": "Branch_Server_3.server_count",
+      "description": "Number of busy servers at branch 3"
+    },
+    "queue_count_4": {
+      "name": "queue_count_4",
+      "expression": "Branch_Server_4.queue_count",
+      "description": "Number in queue at branch 4"
+    },
+    "server_count_4": {
+      "name": "server_count_4",
+      "expression": "Branch_Server_4.server_count",
+      "description": "Number of busy servers at branch 4"
+    },
+    "queue_count_5": {
+      "name": "queue_count_5",
+      "expression": "Branch_Server_5.queue_count",
+      "description": "Number in queue at branch 5"
+    },
+    "server_count_5": {
+      "name": "server_count_5",
+      "expression": "Branch_Server_5.server_count",
+      "description": "Number of busy servers at branch 5"
+    },
+    "queue_count_6": {
+      "name": "queue_count_6",
+      "expression": "Branch_Server_6.queue_count",
+      "description": "Number in queue at branch 6"
+    },
+    "server_count_6": {
+      "name": "server_count_6",
+      "expression": "Branch_Server_6.server_count",
+      "description": "Number of busy servers at branch 6"
+    },
+    "queue_count_7": {
+      "name": "queue_count_7",
+      "expression": "Branch_Server_7.queue_count",
+      "description": "Number in queue at branch 7"
+    },
+    "server_count_7": {
+      "name": "server_count_7",
+      "expression": "Branch_Server_7.server_count",
+      "description": "Number of busy servers at branch 7"
+    },
+    "part_1_num": {
+      "name": "part_1_num",
+      "expression": "Joiner.part_1_count",
+      "description": "Completed parts from branch 1 waiting for join"
+    },
+    "part_2_num": {
+      "name": "part_2_num",
+      "expression": "Joiner.part_2_count",
+      "description": "Completed parts from branch 2 waiting for join"
+    },
+    "part_3_num": {
+      "name": "part_3_num",
+      "expression": "Joiner.part_3_count",
+      "description": "Completed parts from branch 3 waiting for join"
+    },
+    "part_4_num": {
+      "name": "part_4_num",
+      "expression": "Joiner.part_4_count",
+      "description": "Completed parts from branch 4 waiting for join"
+    },
+    "part_5_num": {
+      "name": "part_5_num",
+      "expression": "Joiner.part_5_count",
+      "description": "Completed parts from branch 5 waiting for join"
+    },
+    "part_6_num": {
+      "name": "part_6_num",
+      "expression": "Joiner.part_6_count",
+      "description": "Completed parts from branch 6 waiting for join"
+    },
+    "part_7_num": {
+      "name": "part_7_num",
+      "expression": "Joiner.part_7_count",
+      "description": "Completed parts from branch 7 waiting for join"
+    },
+    "in_system": {
+      "name": "in_system",
+      "expression": "Branch_Server_1.queue_count + Branch_Server_1.server_count + Branch_Server_2.queue_count + Branch_Server_2.server_count + Branch_Server_3.queue_count + Branch_Server_3.server_count + Branch_Server_4.queue_count + Branch_Server_4.server_count + Branch_Server_5.queue_count + Branch_Server_5.server_count + Branch_Server_6.queue_count + Branch_Server_6.server_count + Branch_Server_7.queue_count + Branch_Server_7.server_count + Joiner.part_1_count + Joiner.part_2_count + Joiner.part_3_count + Joiner.part_4_count + Joiner.part_5_count + Joiner.part_6_count + Joiner.part_7_count",
+      "description": "Total in system"
+    },
+    "L_q_total": {
+      "name": "L_q_total",
+      "expression": "Branch_Server_1.queue_count + Branch_Server_2.queue_count + Branch_Server_3.queue_count + Branch_Server_4.queue_count + Branch_Server_5.queue_count + Branch_Server_6.queue_count + Branch_Server_7.queue_count",
+      "description": "Total queue length"
+    },
+    "departure_count": {
+      "name": "departure_count",
+      "expression": "Sink.departure_count",
+      "description": "Total departures"
+    }
+  },
+  "statistics": [
+    {
+      "name": "L_q_total",
+      "type": "time_average",
+      "expression": "Branch_Server_1.queue_count + Branch_Server_2.queue_count + Branch_Server_3.queue_count + Branch_Server_4.queue_count + Branch_Server_5.queue_count + Branch_Server_6.queue_count + Branch_Server_7.queue_count",
+      "description": "Average total queue length"
+    },
+    {
+      "name": "L",
+      "type": "time_average",
+      "expression": "Branch_Server_1.queue_count + Branch_Server_1.server_count + Branch_Server_2.queue_count + Branch_Server_2.server_count + Branch_Server_3.queue_count + Branch_Server_3.server_count + Branch_Server_4.queue_count + Branch_Server_4.server_count + Branch_Server_5.queue_count + Branch_Server_5.server_count + Branch_Server_6.queue_count + Branch_Server_6.server_count + Branch_Server_7.queue_count + Branch_Server_7.server_count + Joiner.part_1_count + Joiner.part_2_count + Joiner.part_3_count + Joiner.part_4_count + Joiner.part_5_count + Joiner.part_6_count + Joiner.part_7_count",
+      "description": "Average number in system"
+    },
+    {
+      "name": "throughput",
+      "type": "count",
+      "expression": "Sink.departure_count",
+      "description": "Total departures"
+    }
+  ],
+  "stopping_condition": "sim_clocktime >= sim_end_time"
+}
