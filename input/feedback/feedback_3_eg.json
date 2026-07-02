@@ -109,6 +109,14 @@
         "mean": "ist_mean"
       },
       "stream_name": "service_3"
+    },
+    "feedback_decision": {
+      "distribution": "uniform",
+      "params": {
+        "min": 0.0,
+        "max": 1.0
+      },
+      "stream_name": "feedback"
     }
   },
   "vertices": [
